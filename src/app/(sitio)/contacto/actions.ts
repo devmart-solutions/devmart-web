@@ -67,9 +67,10 @@ export async function enviarContacto(_prev: ContactoState, fd: FormData): Promis
     return { status: "error", errors, values: data };
   }
 
-  // Anti-abuso: bots detectados por Vercel BotID y máximo 5 envíos cada 10 minutos por visitante.
+  // Anti-abuso: bots detectados por Vercel BotID, máximo 5 envíos cada 10 minutos por visitante y
+  // 40 por hora en total, para que muchos bots con IPs distintas no llenen la bandeja ni el correo.
   if (await esBot()) return { status: "error", errors: {}, values: data, message: "No pudimos verificar tu envío. Escríbenos por WhatsApp." };
-  if (!(await permitir(`contacto:${await huellaCliente()}`, 5, 600))) {
+  if (!(await permitir(`contacto:${await huellaCliente()}`, 5, 600)) || !(await permitir("contacto:global", 40, 3600))) {
     return {
       status: "error",
       errors: {},
