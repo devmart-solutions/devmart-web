@@ -114,12 +114,18 @@ export type EstadoPago = (typeof estadosPago)[number];
 export const estadosSolicitud = ["abierta", "en_revision", "resuelta"] as const;
 export type EstadoSolicitud = (typeof estadosSolicitud)[number];
 
-/** Clientes con acceso al portal (entran con un enlace mágico a su email). */
+/**
+ * Clientes con acceso al portal. Entran con email y contraseña (la crean al registrarse o al activar
+ * la cuenta que les creó el administrador), con Google/GitHub o con un enlace a su email.
+ */
 export const clientes = pgTable("clientes", {
   id: serial("id").primaryKey(),
   nombre: text("nombre").notNull(),
   email: text("email").notNull().unique(),
   empresa: text("empresa").notNull().default(""),
+  telefono: text("telefono").notNull().default(""),
+  /** scrypt; vacío mientras el cliente no haya creado su contraseña. */
+  passwordHash: text("password_hash").notNull().default(""),
   activo: boolean("activo").notNull().default(true),
   creado: timestamp("creado", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -4,12 +4,14 @@ import { CLIENTE_COOKIE, SESSION_COOKIE } from "@/lib/auth/constants";
 // Comprobación optimista: sin la cookie de sesión correspondiente, /admin y /portal llevan a su
 // pantalla de entrada. La verificación real la hacen requireAdmin() y requireCliente() en cada
 // página y acción.
+const PORTAL_PUBLICO = ["/portal/ingreso", "/portal/acceso", "/portal/registro", "/portal/recuperar", "/portal/clave"];
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/portal" || pathname.startsWith("/portal/")) {
-    // Pedir el enlace y abrirlo no requieren sesión.
-    if (pathname.startsWith("/portal/ingreso") || pathname.startsWith("/portal/acceso")) return NextResponse.next();
+    // Entrar, registrarse, recuperar la contraseña y abrir un enlace no requieren sesión.
+    if (PORTAL_PUBLICO.some((ruta) => pathname.startsWith(ruta))) return NextResponse.next();
     if (!request.cookies.has(CLIENTE_COOKIE)) return NextResponse.redirect(new URL("/portal/ingreso", request.url));
     return NextResponse.next();
   }

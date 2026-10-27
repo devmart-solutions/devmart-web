@@ -11,7 +11,7 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { db, schema } from "@/lib/db";
 import { estadosEtapa, estadosPago, estadosSolicitud } from "@/lib/db/schema";
 import { enviarEmail, hayProveedorEmail } from "@/lib/email";
-import { emailEnlacePortalCliente } from "@/lib/email-templates";
+import { emailClaveCliente, emailEnlacePortalCliente } from "@/lib/email-templates";
 import { avisarClienteDeObra } from "@/lib/portal/avisos";
 import { registrar } from "@/lib/security";
 import { siteUrl } from "@/lib/site";
@@ -109,13 +109,12 @@ export async function enviarAccesoCliente(_prev: FormState, fd: FormData): Promi
   if (!cliente.activo) return { ok: false, errors: ["El cliente está inactivo: actívalo antes de enviarle acceso."] };
   if (!hayProveedorEmail()) return { ok: false, errors: ["El envío de correos no está configurado (SMTP o Resend)."] };
 
+  // Sin contraseña todavía: la invitación lleva a crearla. Con contraseña: un enlace para entrar.
   const token = await crearAccesoCliente(cliente.id);
-  const enlace = `${siteUrl}/portal/acceso?token=${token}`;
-  const plantilla = emailEnlacePortalCliente({
-    nombre: cliente.nombre.split(" ")[0],
-    url: enlace,
-    minutos: MINUTOS_ENLACE_CLIENTE,
-  });
+  const nombre = cliente.nombre.split(" ")[0];
+  const plantilla = cliente.passwordHash
+    ? emailEnlacePortalCliente({ nombre, url: `${siteUrl}/portal/acceso?token=${token}`, minutos: MINUTOS_ENLACE_CLIENTE })
+    : emailClaveCliente({ nombre, url: `${siteUrl}/portal/clave?token=${token}`, minutos: MINUTOS_ENLACE_CLIENTE, activar: true });
   const ok = await enviarEmail({
     to: cliente.email,
     subject: plantilla.subject,
@@ -124,7 +123,10 @@ export async function enviarAccesoCliente(_prev: FormState, fd: FormData): Promi
   }).catch(() => false);
   if (!ok) return { ok: false, errors: ["No se pudo enviar el correo. Inténtalo de nuevo."] };
   await registrar("cliente.acceso_enviado", `#${cliente.id}`);
-  return { ok: true, message: `Enlace enviado a ${cliente.email}.` };
+  return {
+    ok: true,
+    message: cliente.passwordHash ? `Enlace enviado a ${cliente.email}.` : `Invitación enviada a ${cliente.email} para crear su contraseña.`,
+  };
 }
 
 /* ───────────── Obras ───────────── */

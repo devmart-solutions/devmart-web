@@ -33,7 +33,7 @@ async function Detalle({ params }: Pick<PageProps<"/admin/clientes/[id]">, "para
 
   return (
     <>
-      <AdminHeader title={c.nombre} intro={c.empresa ? `${c.empresa} · ${c.email}` : c.email}>
+      <AdminHeader title={c.nombre} intro={[c.empresa, c.email, c.telefono].filter(Boolean).join(" · ")}>
         <DeleteButton
           action={eliminarCliente}
           id={c.id}
@@ -63,12 +63,21 @@ async function Detalle({ params }: Pick<PageProps<"/admin/clientes/[id]">, "para
           </Panel>
         </AdminForm>
 
-        <AdminForm action={enviarAccesoCliente} submitLabel="Enviar enlace de acceso">
+        <AdminForm action={enviarAccesoCliente} submitLabel={c.cuentaActiva ? "Enviar enlace de acceso" : "Enviar invitación"}>
           <input type="hidden" name="id" value={c.id} />
           <Panel className="flex flex-col gap-3">
-            <h2 className="h3-dm">Acceso al portal</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="h3-dm">Acceso al portal</h2>
+              <span
+                className={`rounded-full px-2.5 py-1 font-mono text-xs tracking-[0.08em] uppercase ${c.cuentaActiva ? "bg-cielo-tinte text-cielo-profundo" : "bg-nube text-pizarra"}`}
+              >
+                {c.cuentaActiva ? "Cuenta activa" : "Sin contraseña"}
+              </span>
+            </div>
             <p className="text-[15px] leading-[1.55] text-pizarra">
-              Envía a {c.email} un enlace para entrar (vale 15 minutos). Después puede pedir otro en devmart.co/portal/ingreso.
+              {c.cuentaActiva
+                ? `Ya entra con su email y contraseña. Si lo necesita, envíale un enlace para entrar sin contraseña (vale 15 minutos).`
+                : `Envía a ${c.email} una invitación para crear su contraseña (vale 15 minutos). También puede activarla registrándose en devmart.co/portal/registro con este email.`}
             </p>
           </Panel>
         </AdminForm>

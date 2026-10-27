@@ -5,19 +5,34 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
+  abrirRegistro,
   cerrarSesionCliente,
+  confirmarRegistro,
   consumirAccesoCliente,
   crearAccesoCliente,
   crearSesionCliente,
+  guardarPasswordCliente,
+  HORAS_REGISTRO,
+  MINIMO_PASSWORD_CLIENTE,
   MINUTOS_ENLACE_CLIENTE,
   requireCliente,
+  sellarRegistro,
+  verificarCredencialesCliente,
 } from "@/lib/auth/cliente";
 import { credenciales } from "@/lib/auth/config";
 import { crearTokenEntrar, MINUTOS_ENLACE_ENTRAR } from "@/lib/auth/cuenta";
+import { hashPassword, problemaPassword } from "@/lib/auth/password";
 import { esBot } from "@/lib/botid";
 import { db, hasDb, schema } from "@/lib/db";
 import { enviarEmail } from "@/lib/email";
-import { emailEnlacePortalCliente, emailEntrarAdmin, emailNuevoContacto } from "@/lib/email-templates";
+import {
+  emailClaveCliente,
+  emailConfirmarRegistro,
+  emailCuentaExistente,
+  emailEnlacePortalCliente,
+  emailEntrarAdmin,
+  emailNuevoContacto,
+} from "@/lib/email-templates";
 import { avisarAdmin } from "@/lib/portal/avisos";
 import { obraDelCliente } from "@/lib/portal/datos";
 import { borrarProspecto, leerProspecto } from "@/lib/portal/prospecto";
@@ -115,6 +130,172 @@ export async function entrarConEnlace(_prev: PortalState, fd: FormData): Promise
 export async function salirDelPortal() {
   await cerrarSesionCliente();
   redirect("/portal/ingreso");
+}
+
+/* ───────────── Email y contraseña ───────────── */
+
+const BOT = "No pudimos verificar tu navegador. Inténtalo de nuevo.";
+const leer = (fd: FormData, campo: string, max = 200) => String(fd.get(campo) ?? "").slice(0, max);
+
+/** Mismos límites que pedir un enlace: 5 intentos cada 15 minutos por conexión y 60 en total. */
+async function limitePortal() {
+  const huella = await huellaCliente();
+  return (await permitir(`portal:${huella}`, 5, 900)) && (await permitir("portal:global", 60, 900));
+}
+
+async function correo(to: string, plantilla: { subject: string; text: string; html: string }, enlace: string) {
+  const enviado = await enviarEmail({ to, ...plantilla }).catch((err) => {
+    console.error("[portal] Error al enviar el correo:", err);
+    return false;
+  });
+  if (!enviado && process.env.NODE_ENV !== "production") {
+    console.info(`[portal] Sin proveedor de correo. Enlace (solo en desarrollo): ${enlace}`);
+  }
+  return enviado;
+}
+
+export async function iniciarSesionCliente(_prev: PortalState, fd: FormData): Promise<PortalState> {
+  if (!hasDb) return { error: "El portal aún no está disponible." };
+  if (await esBot()) return { error: BOT };
+  if (!(await limitePortal())) return { error: "Demasiados intentos. Espera 15 minutos antes de volver a intentarlo." };
+
+  const email = emailSchema.safeParse(fd.get("email"));
+  const clienteId = email.success ? await verificarCredencialesCliente(email.data, leer(fd, "password")) : null;
+  if (!clienteId) {
+    await registrar("portal.login_fallido", await huellaCliente());
+    return {
+      error:
+        "Email o contraseña incorrectos. Si tu cuenta la creamos nosotros y aún no tienes contraseña, usa «¿Olvidaste tu contraseña?» para crearla.",
+    };
+  }
+  await crearSesionCliente(clienteId);
+  await registrar("portal.ingreso", `cliente #${clienteId} · contraseña`);
+  redirect("/portal");
+}
+
+const registroSchema = z.object({
+  nombre: z.string().trim().min(2, "Escribe tu nombre.").max(120, "El nombre es muy largo."),
+  email: emailSchema,
+  telefono: z.string().trim().max(30, "El teléfono es muy largo.").default(""),
+  empresa: z.string().trim().max(120, "El nombre de la empresa es muy largo.").default(""),
+});
+
+/**
+ * Registro: no crea nada todavía. Envía un enlace al email; la cuenta se crea (o se activa, si ya
+ * la habíamos creado nosotros) cuando lo abre. La respuesta es la misma exista o no el email.
+ */
+export async function registrarCliente(_prev: PortalState, fd: FormData): Promise<PortalState> {
+  if (!hasDb) return { error: "El portal aún no está disponible." };
+  if (await esBot()) return { error: BOT };
+  if (!(await limitePortal())) return { error: "Demasiados intentos. Espera 15 minutos antes de volver a intentarlo." };
+
+  const parsed = registroSchema.safeParse({
+    nombre: fd.get("nombre"),
+    email: fd.get("email"),
+    telefono: fd.get("telefono") ?? "",
+    empresa: fd.get("empresa") ?? "",
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  const d = parsed.data;
+  const password = leer(fd, "password", 201);
+  const problema = problemaPassword(password, leer(fd, "confirmacion", 201), d.email, MINIMO_PASSWORD_CLIENTE);
+  if (problema) return { error: problema };
+  if (!fd.get("acepto")) return { error: "Acepta la política de privacidad para crear tu cuenta." };
+
+  const respuesta: PortalState = {
+    ok: true,
+    message: `Te enviamos un correo a ${d.email} para confirmar tu cuenta. Abre el enlace en las próximas ${HORAS_REGISTRO} horas (revisa también la carpeta de spam).`,
+  };
+
+  // El email del panel no se registra como cliente.
+  const cfg = await credenciales();
+  if (cfg.email && d.email === cfg.email) return respuesta;
+
+  const [existente] = await db()
+    .select({ id: schema.clientes.id, nombre: schema.clientes.nombre, hash: schema.clientes.passwordHash })
+    .from(schema.clientes)
+    .where(eq(schema.clientes.email, d.email))
+    .limit(1);
+
+  if (existente?.hash) {
+    const url = `${siteUrl}/portal/recuperar`;
+    await correo(d.email, emailCuentaExistente({ nombre: existente.nombre.split(" ")[0], url }), url);
+    return respuesta;
+  }
+
+  const token = await sellarRegistro({ ...d, passwordHash: await hashPassword(password) });
+  const url = `${siteUrl}/portal/registro/confirmar?token=${encodeURIComponent(token)}`;
+  await correo(d.email, emailConfirmarRegistro({ nombre: d.nombre.split(" ")[0], url, horas: HORAS_REGISTRO }), url);
+  await registrar("portal.registro_pedido", existente ? `cliente #${existente.id} (activación)` : "nuevo");
+  return respuesta;
+}
+
+/** Abre el enlace del registro: crea o activa la cuenta y entra. */
+export async function confirmarRegistroCliente(_prev: PortalState, fd: FormData): Promise<PortalState> {
+  if (!hasDb) return { error: "El portal aún no está disponible." };
+  const registro = await abrirRegistro(leer(fd, "token", 2000));
+  if (!registro) return { error: "El enlace venció. Vuelve a registrarte para recibir uno nuevo." };
+
+  const r = await confirmarRegistro(registro);
+  if (r.estado === "ya_activa") return { error: "Esta cuenta ya está activa. Entra con tu email y contraseña." };
+  if (r.estado === "inactiva") return { error: "Tu acceso al portal está desactivado. Escríbenos y lo revisamos." };
+
+  await crearSesionCliente(r.clienteId);
+  await registrar(r.estado === "creada" ? "portal.registro" : "portal.activacion", `cliente #${r.clienteId}`);
+  if (r.estado === "creada") {
+    await avisarAdmin(`Nuevo registro en el portal: ${registro.nombre}`, [
+      `Nombre: ${registro.nombre}`,
+      `Email: ${registro.email}`,
+      ...(registro.telefono ? [`Teléfono: ${registro.telefono}`] : []),
+      ...(registro.empresa ? [`Empresa: ${registro.empresa}`] : []),
+      "",
+      "Aún no tiene proyectos. Créale una obra desde el panel cuando empiecen a trabajar juntos.",
+    ]);
+  }
+  redirect("/portal");
+}
+
+/** «¿Olvidaste tu contraseña?»: también sirve para crearla si la cuenta la creamos nosotros. */
+export async function recuperarClave(_prev: PortalState, fd: FormData): Promise<PortalState> {
+  if (!hasDb) return { error: "El portal aún no está disponible." };
+  if (await esBot()) return { error: BOT };
+  if (!(await limitePortal())) return { error: "Demasiados intentos. Espera 15 minutos y revisa tu correo (también la carpeta de spam)." };
+
+  const email = emailSchema.safeParse(fd.get("email"));
+  if (!email.success) return { error: "Escribe un email válido." };
+  const respuesta: PortalState = {
+    ok: true,
+    message: `Si ese email tiene una cuenta, te enviamos un enlace para crear tu contraseña. Vence en ${MINUTOS_ENLACE_CLIENTE} minutos.`,
+  };
+
+  const [cliente] = await db()
+    .select({ id: schema.clientes.id, nombre: schema.clientes.nombre, hash: schema.clientes.passwordHash })
+    .from(schema.clientes)
+    .where(and(eq(schema.clientes.email, email.data), eq(schema.clientes.activo, true)))
+    .limit(1);
+  if (!cliente) return respuesta;
+
+  const url = `${siteUrl}/portal/clave?token=${await crearAccesoCliente(cliente.id)}`;
+  const plantilla = emailClaveCliente({ nombre: cliente.nombre.split(" ")[0], url, minutos: MINUTOS_ENLACE_CLIENTE, activar: !cliente.hash });
+  await correo(email.data, plantilla, url);
+  await registrar("portal.clave_pedida", `cliente #${cliente.id}`);
+  return respuesta;
+}
+
+/** Fija la contraseña con el enlace del correo (un solo uso) y entra. */
+export async function establecerClave(_prev: PortalState, fd: FormData): Promise<PortalState> {
+  if (!hasDb) return { error: "El portal aún no está disponible." };
+  if (await esBot()) return { error: BOT };
+  const password = leer(fd, "password", 201);
+  const problema = problemaPassword(password, leer(fd, "confirmacion", 201), "", MINIMO_PASSWORD_CLIENTE);
+  if (problema) return { error: problema };
+
+  const clienteId = await consumirAccesoCliente(leer(fd, "token", 64));
+  if (!clienteId) return { error: "El enlace venció o ya se usó. Pide uno nuevo." };
+  await guardarPasswordCliente(clienteId, await hashPassword(password));
+  await crearSesionCliente(clienteId);
+  await registrar("portal.clave_nueva", `cliente #${clienteId}`);
+  redirect("/portal");
 }
 
 /* ───────────── Prospectos ───────────── */

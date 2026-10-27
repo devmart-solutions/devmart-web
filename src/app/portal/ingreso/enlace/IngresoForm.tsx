@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Loader2, Mail } from "lucide-react";
-import { solicitarAcceso, type PortalState } from "../actions";
+import { solicitarAcceso, type PortalState } from "../../actions";
 import { AvisoPortal, inputPortal } from "@/components/portal/TarjetaAcceso";
 
 export function IngresoForm() {

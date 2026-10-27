@@ -162,6 +162,84 @@ export function emailEnlacePortalCliente({
   return { subject, text, html };
 }
 
+/** Confirmar el registro en el portal (crea o activa la cuenta). */
+export function emailConfirmarRegistro({ nombre, url, horas }: { nombre: string; url: string; horas: number }) {
+  const subject = "Confirma tu cuenta del portal · DevMart";
+  const text = `Hola, ${nombre}.
+
+Para terminar de crear tu cuenta en el portal de clientes de DevMart, abre este enlace (válido por ${horas} horas):
+
+${url}
+
+Si no te registraste, ignora este mensaje: sin este enlace no se crea ninguna cuenta.
+
+--
+DevMart Solutions
+Cartagena, Colombia`;
+  const html = generarEmailHtml({
+    titulo: "Confirma tu cuenta",
+    subtitulo: "// Portal de clientes",
+    cuerpo: [`Hola, ${nombre}.`, "Solo falta un paso para activar tu cuenta en el portal de clientes de DevMart."],
+    boton: { texto: "Confirmar mi cuenta", url },
+    pieNota: `Este enlace caduca en ${horas} horas. Si no te registraste, ignora este correo: sin él no se crea ninguna cuenta.`,
+  });
+  return { subject, text, html };
+}
+
+/** Alguien intentó registrarse con un email que ya tiene cuenta. */
+export function emailCuentaExistente({ nombre, url }: { nombre: string; url: string }) {
+  const subject = "Ya tienes una cuenta en el portal · DevMart";
+  const text = `Hola, ${nombre}.
+
+Alguien (quizá tú) intentó crear una cuenta con este email, pero ya tienes una. Entra con tu contraseña o, si no la recuerdas, recupérala aquí:
+
+${url}
+
+Si no fuiste tú, ignora este mensaje: tu cuenta no cambió.
+
+--
+DevMart Solutions`;
+  const html = generarEmailHtml({
+    titulo: "Ya tienes una cuenta",
+    subtitulo: "// Portal de clientes",
+    cuerpo: [
+      `Hola, ${nombre}.`,
+      "Alguien (quizá tú) intentó crear una cuenta con este email, pero ya tienes una. Entra con tu contraseña o recupérala desde el botón.",
+    ],
+    boton: { texto: "Recuperar mi contraseña", url },
+    pieNota: "Si no fuiste tú, ignora este correo: tu cuenta no cambió.",
+  });
+  return { subject, text, html };
+}
+
+/** Crear (activar) o recuperar la contraseña del portal. */
+export function emailClaveCliente({ nombre, url, minutos, activar }: { nombre: string; url: string; minutos: number; activar: boolean }) {
+  const subject = activar ? "Activa tu cuenta del portal · DevMart" : "Crea una contraseña nueva · Portal DevMart";
+  const intro = activar
+    ? "Ya tienes acceso al portal de clientes de DevMart, donde verás el avance de tu proyecto, los entregables y los pagos. Crea tu contraseña para entrar cuando quieras."
+    : "Recibimos una solicitud para cambiar la contraseña de tu portal de clientes.";
+  const text = `Hola, ${nombre}.
+
+${intro}
+
+Abre este enlace (válido por ${minutos} minutos, un solo uso):
+
+${url}
+
+Si no lo pediste, ignora este mensaje.
+
+--
+DevMart Solutions`;
+  const html = generarEmailHtml({
+    titulo: activar ? "Activa tu cuenta" : "Crea una contraseña nueva",
+    subtitulo: "// Portal de clientes",
+    cuerpo: [`Hola, ${nombre}.`, intro],
+    boton: { texto: activar ? "Crear mi contraseña" : "Cambiar mi contraseña", url },
+    pieNota: `Este enlace es de un solo uso y caduca en ${minutos} minutos. Si no lo pediste, ignora este correo.`,
+  });
+  return { subject, text, html };
+}
+
 /** Plantilla para aviso de nuevo contacto en devmart.co */
 export function emailNuevoContacto({
   nombre,

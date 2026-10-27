@@ -13,7 +13,7 @@ export default function ClientesPage() {
     <>
       <AdminHeader
         title="Clientes"
-        intro="Quienes entran al portal en devmart.co/portal para ver el avance de su proyecto. Entran con un enlace a su email, sin contraseña."
+        intro="Quienes entran al portal en devmart.co/portal para ver el avance de su proyecto. Al crearlos, envíales la invitación para que creen su contraseña; también pueden registrarse ellos mismos con su email."
       />
       <Suspense fallback={<Cargando />}>
         <Lista />
@@ -69,6 +69,9 @@ async function Lista() {
                   >
                     {c.activo ? "Activo" : "Inactivo"}
                   </span>
+                  {c.activo && !c.cuentaActiva && (
+                    <span className="rounded-full bg-[#FFF4ED] px-2.5 py-1 tracking-[0.08em] text-[#9A3412] uppercase">Sin contraseña</span>
+                  )}
                 </span>
               </Link>
             </li>

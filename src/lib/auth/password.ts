@@ -31,9 +31,9 @@ export async function hashPassword(password: string): Promise<string> {
   return ["scrypt", N, r, p, salt.toString("base64"), hash.toString("base64")].join(".");
 }
 
-/** Reglas para una contraseña nueva. Devuelve el error o null. */
-export function problemaPassword(password: string, confirmacion: string, email: string): string | null {
-  if (password.length < 12) return "La contraseña debe tener al menos 12 caracteres.";
+/** Reglas para una contraseña nueva (12 caracteres en el panel; los clientes usan 8). Devuelve el error o null. */
+export function problemaPassword(password: string, confirmacion: string, email: string, minimo = 12): string | null {
+  if (password.length < minimo) return `La contraseña debe tener al menos ${minimo} caracteres.`;
   if (password.length > 200) return "La contraseña es demasiado larga.";
   if (password !== confirmacion) return "Las dos contraseñas no coinciden.";
   if (email && password.toLowerCase().includes(email.split("@")[0])) return "No uses tu email dentro de la contraseña.";

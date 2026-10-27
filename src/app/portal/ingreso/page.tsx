@@ -2,39 +2,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
 import { OAuthButtons } from "@/components/OAuthButtons";
 import { AvisoPortal, TarjetaAcceso } from "@/components/portal/TarjetaAcceso";
 import { leerSesionCliente } from "@/lib/auth/cliente";
 import { oauthDisponible } from "@/lib/auth/oauth";
 import { leerProspecto } from "@/lib/portal/prospecto";
-import { IngresoForm } from "./IngresoForm";
+import { LoginClienteForm } from "./LoginClienteForm";
 import { ProspectoForm } from "./ProspectoForm";
 
 export const metadata: Metadata = { title: "Entrar" };
 
 const ERRORES: Record<string, string> = {
-  sin_acceso: "Esa cuenta no tiene acceso al portal. Entra con el email con el que trabajas con nosotros o pídenos el enlace por correo.",
+  sin_acceso: "Esa cuenta no tiene acceso al portal. Entra con el email con el que trabajas con nosotros o crea tu cuenta.",
   cancelado: "Cancelaste el acceso con Google o GitHub.",
   state: "El acceso tardó demasiado. Vuelve a intentarlo.",
-  perfil: "No pudimos leer tu email del proveedor. Inténtalo de nuevo o pide el enlace por correo.",
+  perfil: "No pudimos leer tu email del proveedor. Inténtalo de nuevo o entra con tu contraseña.",
   bloqueado: "Demasiados intentos. Espera 15 minutos antes de volver a intentarlo.",
-  no_configurado: "El acceso con esa cuenta no está disponible en este momento. Pide el enlace por correo.",
+  no_configurado: "El acceso con esa cuenta no está disponible en este momento. Entra con tu contraseña.",
   sin_configurar: "El portal aún no está disponible.",
   parametros: "Respuesta inválida del proveedor. Inténtalo de nuevo.",
 };
 
 export default function IngresoPage({ searchParams }: PageProps<"/portal/ingreso">) {
   return (
-    <TarjetaAcceso
-      titulo="Tu portal de cliente"
-      intro={
-        oauthDisponible("google") || oauthDisponible("github")
-          ? "Entra con tu cuenta de Google o GitHub, o con un enlace a tu correo. Sin contraseñas."
-          : "Escribe el email con el que trabajas con nosotros y te enviamos un enlace para entrar. Sin contraseñas."
-      }
-    >
-      <Suspense fallback={<div className="h-48 animate-pulse rounded-xl bg-nube" aria-label="Cargando" />}>
+    <TarjetaAcceso titulo="Bienvenido a tu portal" intro="Entra para ver el avance de tu proyecto, los entregables y los pagos.">
+      <Suspense fallback={<div className="h-96 animate-pulse rounded-xl bg-nube" aria-label="Cargando" />}>
         <Opciones searchParams={searchParams} />
       </Suspense>
       <Link href="/" className="inline-flex w-fit items-center gap-2 text-[15px] text-pizarra hover:text-noche">
@@ -78,12 +71,21 @@ async function Opciones({ searchParams }: Pick<PageProps<"/portal/ingreso">, "se
           <OAuthButtons google={google} github={github} destino="portal" />
           <div className="flex items-center gap-3">
             <hr className="flex-1 border-borde" />
-            <span className="text-[13px] text-pizarra">o con un enlace a tu correo</span>
+            <span className="text-[13px] text-pizarra">o con tu email</span>
             <hr className="flex-1 border-borde" />
           </div>
         </>
       )}
-      <IngresoForm />
+      <LoginClienteForm />
+      <Link href="/portal/ingreso/enlace" className="btn-secondary w-full">
+        <Mail size={18} strokeWidth={1.5} aria-hidden /> Entrar con un enlace a mi correo
+      </Link>
+      <p className="border-t border-borde pt-5 text-center text-[15px] text-pizarra">
+        ¿Aún no tienes cuenta?{" "}
+        <Link href="/portal/registro" className="font-medium text-cielo-profundo underline-offset-4 hover:underline">
+          Créala aquí
+        </Link>
+      </p>
     </div>
   );
 }
