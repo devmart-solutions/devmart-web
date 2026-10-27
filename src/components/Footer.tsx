@@ -71,7 +71,7 @@ export function Footer() {
         <div className="grid border-t border-white/15 sm:grid-cols-2 lg:grid-cols-4">
           <Columna n="01" titulo="Sitio" className="sm:pr-7">
             <ul className="grid grid-cols-2 gap-2.5 text-[17px] sm:grid-cols-1">
-              {[...nav, { href: "/contacto", label: "Contacto" }].map((item) => (
+              {[...nav, { href: "/contacto", label: "Contacto" }, { href: "/portal", label: "Acceso clientes" }].map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="transition-colors hover:text-cielo">
                     {item.label}

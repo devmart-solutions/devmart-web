@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, CircleUserRound, Menu, X } from "lucide-react";
 import { HoraLocal } from "./HoraLocal";
 import { Logo } from "./Logo";
 import { nav, site } from "@/lib/site";
@@ -77,6 +77,15 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Acceso de clientes al portal: icono en móvil, con texto desde md. */}
+          <Link
+            href="/portal"
+            aria-label="Acceso para clientes"
+            className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-full text-[15px] font-medium text-noche transition-colors hover:text-cielo-profundo md:h-12 md:border md:border-borde md:px-4 md:hover:border-cielo-profundo"
+          >
+            <CircleUserRound size={22} strokeWidth={1.5} aria-hidden />
+            <span className="hidden md:inline">Acceder</span>
+          </Link>
           <Link
             href="/contacto"
             className="group hidden h-12 items-center gap-3 rounded-full bg-noche pr-1.5 pl-5 text-[15px] font-semibold text-blanco transition-colors duration-150 hover:bg-cielo-profundo sm:flex"
@@ -139,6 +148,12 @@ export function Header() {
           <div className="container-dm mt-auto flex flex-col gap-4 pt-10 pb-7">
             <Link href="/contacto" className="btn-primary w-full">
               Hablemos de tu idea
+            </Link>
+            <Link
+              href="/portal"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/20 text-[15px] font-medium text-nube transition-colors hover:border-cielo hover:text-cielo"
+            >
+              <CircleUserRound size={20} strokeWidth={1.5} aria-hidden /> Acceso para clientes
             </Link>
             <div className="flex items-center justify-between gap-4 font-mono text-xs text-niebla">
               {site.email ? <a href={`mailto:${site.email}`} className="hover:text-cielo">{site.email}</a> : <span />}
