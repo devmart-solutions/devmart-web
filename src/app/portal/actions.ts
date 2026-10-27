@@ -12,12 +12,15 @@ import {
   MINUTOS_ENLACE_CLIENTE,
   requireCliente,
 } from "@/lib/auth/cliente";
+import { credenciales } from "@/lib/auth/config";
+import { crearTokenEntrar, MINUTOS_ENLACE_ENTRAR } from "@/lib/auth/cuenta";
 import { esBot } from "@/lib/botid";
 import { db, hasDb, schema } from "@/lib/db";
 import { enviarEmail } from "@/lib/email";
-import { emailEnlacePortalCliente } from "@/lib/email-templates";
+import { emailEnlacePortalCliente, emailEntrarAdmin, emailNuevoContacto } from "@/lib/email-templates";
 import { avisarAdmin } from "@/lib/portal/avisos";
 import { obraDelCliente } from "@/lib/portal/datos";
+import { borrarProspecto, leerProspecto } from "@/lib/portal/prospecto";
 import { huellaCliente, permitir, registrar } from "@/lib/security";
 import { siteUrl } from "@/lib/site";
 
@@ -43,6 +46,14 @@ export async function solicitarAcceso(_prev: PortalState, fd: FormData): Promise
   };
   const email = emailSchema.safeParse(fd.get("email"));
   if (!email.success) return { error: "Escribe un email válido." };
+
+  // El administrador también puede pedir aquí su enlace: entra al panel, no al portal. La respuesta
+  // es la misma de siempre, así nadie descubre cuál es el email del panel probando direcciones.
+  const cfg = await credenciales();
+  if (cfg.ready && email.data === cfg.email) {
+    await enviarEnlaceAdmin(cfg.email, Boolean(cfg.totpSecret));
+    return respuesta;
+  }
 
   const [cliente] = await db()
     .select({ id: schema.clientes.id, nombre: schema.clientes.nombre })
@@ -74,6 +85,23 @@ export async function solicitarAcceso(_prev: PortalState, fd: FormData): Promise
   return respuesta;
 }
 
+/**
+ * Con verificación en dos pasos, un enlace de un solo uso que lleva al paso del código. Sin ella, el
+ * enlace no puede sustituir a la contraseña: el correo solo lleva a la pantalla de entrada.
+ */
+async function enviarEnlaceAdmin(to: string, con2fa: boolean) {
+  const url = con2fa ? `${siteUrl}/admin/login/enlace?token=${await crearTokenEntrar()}` : `${siteUrl}/admin/login`;
+  const plantilla = emailEntrarAdmin({ url, minutos: MINUTOS_ENLACE_ENTRAR });
+  const enviado = await enviarEmail({ to, subject: plantilla.subject, text: plantilla.text, html: plantilla.html }).catch((err) => {
+    console.error("[portal] Error al enviar el enlace del panel:", err);
+    return false;
+  });
+  if (!enviado && process.env.NODE_ENV !== "production") {
+    console.info(`[portal] Sin proveedor de correo. Enlace del panel (solo en desarrollo): ${url}`);
+  }
+  await registrar("login.enlace_pedido", enviado ? "desde el portal" : "desde el portal (correo no enviado)");
+}
+
 /** Usa el enlace (un solo uso) y abre la sesión del cliente. */
 export async function entrarConEnlace(_prev: PortalState, fd: FormData): Promise<PortalState> {
   const token = String(fd.get("token") ?? "").slice(0, 64);
@@ -87,6 +115,48 @@ export async function entrarConEnlace(_prev: PortalState, fd: FormData): Promise
 export async function salirDelPortal() {
   await cerrarSesionCliente();
   redirect("/portal/ingreso");
+}
+
+/* ───────────── Prospectos ───────────── */
+
+const prospectoSchema = z.object({
+  nombre: z.string().trim().min(2, "Escribe tu nombre.").max(100, "El nombre es muy largo."),
+  idea: z.string().trim().max(2000, "Cuéntanos tu idea en menos de 2000 caracteres.").default(""),
+});
+
+/** Quien entró con Google o GitHub sin ser cliente deja sus datos: llegan a Mensajes del panel. */
+export async function registrarProspecto(_prev: PortalState, fd: FormData): Promise<PortalState> {
+  if (!hasDb) return { error: "El portal aún no está disponible." };
+  const prospecto = await leerProspecto();
+  if (!prospecto) return { error: "Pasó demasiado tiempo. Vuelve a entrar con Google o GitHub." };
+  if (!(await permitir(`prospecto:${await huellaCliente()}`, 3, 3600))) {
+    return { error: "Ya recibimos tus datos. Te escribiremos pronto." };
+  }
+  const parsed = prospectoSchema.safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  const { nombre, idea } = parsed.data;
+
+  const datos = {
+    nombre,
+    email: prospecto.email,
+    telefono: "No especificado",
+    tipo: "Prospecto desde el portal",
+    presupuesto: "Por definir",
+    descripcion: idea || "Entró al portal con su cuenta y pidió que lo contactemos.",
+  };
+  await db().insert(schema.mensajes).values({ ...datos, notas: "Email verificado por Google o GitHub al entrar al portal." });
+  await borrarProspecto();
+  await registrar("portal.prospecto", nombre);
+
+  const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL;
+  if (to) {
+    const plantilla = emailNuevoContacto(datos);
+    await enviarEmail({ to, replyTo: prospecto.email, subject: plantilla.subject, text: plantilla.text, html: plantilla.html }).catch((err) => {
+      console.error("[portal] No se pudo avisar del prospecto:", err);
+      return false;
+    });
+  }
+  return { ok: true, message: `¡Gracias, ${nombre.split(" ")[0]}! Te escribiremos a ${prospecto.email} para hablar de tu proyecto.` };
 }
 
 /* ───────────── Entregables ───────────── */

@@ -80,7 +80,7 @@ export function authUrl(p: OAuthProvider, state: string): string {
       client_id: process.env.GOOGLE_CLIENT_ID ?? "",
       redirect_uri: oauthRedirectUri(p),
       response_type: "code",
-      scope: "openid email",
+      scope: "openid email profile",
       state,
       access_type: "online",
       prompt: "select_account",
@@ -97,14 +97,18 @@ export function authUrl(p: OAuthProvider, state: string): string {
   return `https://github.com/login/oauth/authorize?${params}`;
 }
 
-/** Emails verificados de la cuenta (en minúsculas). Vacío si algo falla. */
-export function emailsVerificados(p: OAuthProvider, code: string): Promise<string[]> {
-  return p === "google" ? googleEmails(code) : githubEmails(code);
+/** Emails verificados de la cuenta (en minúsculas) y su nombre. Sin emails si algo falla. */
+export type PerfilOAuth = { emails: string[]; nombre: string };
+
+const SIN_PERFIL: PerfilOAuth = { emails: [], nombre: "" };
+
+export function perfilOAuth(p: OAuthProvider, code: string): Promise<PerfilOAuth> {
+  return p === "google" ? googlePerfil(code) : githubPerfil(code);
 }
 
 // ───────── Google ─────────
 
-async function googleEmails(code: string): Promise<string[]> {
+async function googlePerfil(code: string): Promise<PerfilOAuth> {
   try {
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -117,25 +121,26 @@ async function googleEmails(code: string): Promise<string[]> {
         grant_type: "authorization_code",
       }),
     });
-    if (!tokenRes.ok) return [];
+    if (!tokenRes.ok) return SIN_PERFIL;
     const tokenJson = (await tokenRes.json()) as { id_token?: string };
-    if (!tokenJson.id_token) return [];
+    if (!tokenJson.id_token) return SIN_PERFIL;
     // Decode the JWT payload (we already exchanged the code — no need to verify the signature here,
     // the token came directly from Google's token endpoint over HTTPS).
     const payload = JSON.parse(Buffer.from(tokenJson.id_token.split(".")[1], "base64url").toString()) as {
       email?: string;
       email_verified?: boolean;
+      name?: string;
     };
-    if (!payload.email || !payload.email_verified) return [];
-    return [payload.email.toLowerCase()];
+    if (!payload.email || !payload.email_verified) return SIN_PERFIL;
+    return { emails: [payload.email.toLowerCase()], nombre: payload.name ?? "" };
   } catch {
-    return [];
+    return SIN_PERFIL;
   }
 }
 
 // ───────── GitHub ─────────
 
-async function githubEmails(code: string): Promise<string[]> {
+async function githubPerfil(code: string): Promise<PerfilOAuth> {
   try {
     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
@@ -147,20 +152,23 @@ async function githubEmails(code: string): Promise<string[]> {
         redirect_uri: oauthRedirectUri("github"),
       }),
     });
-    if (!tokenRes.ok) return [];
+    if (!tokenRes.ok) return SIN_PERFIL;
     const tokenJson = (await tokenRes.json()) as { access_token?: string };
-    if (!tokenJson.access_token) return [];
+    if (!tokenJson.access_token) return SIN_PERFIL;
 
-    const emailRes = await fetch("https://api.github.com/user/emails", {
-      headers: { Authorization: `Bearer ${tokenJson.access_token}`, "User-Agent": "DevMart-Web" },
-    });
-    if (!emailRes.ok) return [];
+    const headers = { Authorization: `Bearer ${tokenJson.access_token}`, "User-Agent": "DevMart-Web" };
+    const [emailRes, userRes] = await Promise.all([
+      fetch("https://api.github.com/user/emails", { headers }),
+      fetch("https://api.github.com/user", { headers }),
+    ]);
+    if (!emailRes.ok) return SIN_PERFIL;
+    const user = userRes.ok ? ((await userRes.json()) as { name?: string | null; login?: string }) : {};
     // Todos los verificados, no solo el principal: un cliente puede tener en GitHub otro email
     // principal distinto del que usa con nosotros.
     const emails = (await emailRes.json()) as { email: string; primary: boolean; verified: boolean }[];
-    return emails.filter((e) => e.verified).map((e) => e.email.toLowerCase());
+    return { emails: emails.filter((e) => e.verified).map((e) => e.email.toLowerCase()), nombre: user.name || user.login || "" };
   } catch {
-    return [];
+    return SIN_PERFIL;
   }
 }
 

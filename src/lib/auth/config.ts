@@ -26,6 +26,7 @@ export const clavesCuenta = (email: string) => ({
   passwordHash: `admin_password_hash:${email}`,
   totpSecret: `admin_totp_secret:${email}`,
   reset: `admin_reset:${email}`,
+  login: `admin_login:${email}`,
 });
 
 /**

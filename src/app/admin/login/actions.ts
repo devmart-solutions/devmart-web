@@ -2,7 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { credenciales } from "@/lib/auth/config";
-import { anularTokenRecuperacion, crearTokenRecuperacion, guardarCredenciales, MINUTOS_ENLACE, tokenValido } from "@/lib/auth/cuenta";
+import {
+  anularTokenRecuperacion,
+  consumirTokenEntrar,
+  crearTokenRecuperacion,
+  guardarCredenciales,
+  MINUTOS_ENLACE,
+  tokenValido,
+} from "@/lib/auth/cuenta";
 import { hashPassword, problemaPassword, verifyPassword } from "@/lib/auth/password";
 import { borrarPasoPendiente, crearPasoPendiente, createSession, pasoPendienteValido, revocarSesiones } from "@/lib/auth/session";
 import { esSecretoTotp, verifyTotp } from "@/lib/auth/totp";
@@ -62,6 +69,29 @@ export async function iniciarSesion(_prev: LoginState, fd: FormData): Promise<Lo
 
   await crearPasoPendiente();
   return { paso: "codigo" };
+}
+
+/**
+ * Enlace que el administrador pidió desde el acceso de clientes: sustituye a la contraseña, nunca al
+ * código. Se gasta con un clic (POST) para que los antivirus de correo que abren enlaces no lo usen.
+ */
+export async function entrarConEnlace(_prev: LoginState, fd: FormData): Promise<LoginState> {
+  const cfg = await credenciales();
+  if (!cfg.ready || !cfg.totpSecret) return { error: "Este enlace ya no sirve. Entra con tu email y contraseña." };
+  if (await esBot()) return { error: BOT };
+
+  const huella = await huellaCliente();
+  if (!(await permitir(`login:${huella}`, 5, 900)) || !(await permitir("login:global", 30, 900))) {
+    await registrar("login.bloqueado", huella);
+    return { error: "Demasiados intentos. Espera 15 minutos antes de volver a intentarlo." };
+  }
+  if (!(await consumirTokenEntrar(leer(fd, "token", 64)))) {
+    return { error: "El enlace venció o ya se usó. Pide uno nuevo o entra con tu contraseña." };
+  }
+
+  await crearPasoPendiente();
+  await registrar("login.enlace", huella);
+  redirect("/admin/login?paso=codigo");
 }
 
 async function entrar(porCliente: string, huella: string): Promise<never> {

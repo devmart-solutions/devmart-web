@@ -216,6 +216,33 @@ export function emailRecuperarAdmin({ url, minutos }: { url: string; minutos: nu
   return { subject, text, html };
 }
 
+/** Enlace para entrar al panel sin contraseña (después se pide el código 2FA). */
+export function emailEntrarAdmin({ url, minutos }: { url: string; minutos: number }) {
+  const subject = "Tu enlace para entrar al panel · DevMart";
+  const text = `Pediste entrar al panel de DevMart desde el acceso de clientes.
+
+Abre este enlace (válido por ${minutos} minutos, un solo uso). Después te pediremos el código de tu app de autenticación:
+
+${url}
+
+Si no fuiste tú, ignora este mensaje: sin el código nadie puede entrar.
+
+--
+DevMart Solutions`;
+  const html = generarEmailHtml({
+    titulo: "Entrar al panel",
+    subtitulo: "// Seguridad /admin",
+    cuerpo: [
+      "Pediste entrar al panel de DevMart desde el acceso de clientes.",
+      "Usa el botón para continuar. Después te pediremos el código de tu app de autenticación.",
+    ],
+    boton: { texto: "Entrar al panel", url },
+    pieNota: `Este enlace caduca en ${minutos} minutos y sirve una sola vez. Si no fuiste tú, ignora este mensaje: sin el código nadie puede entrar.`,
+  });
+
+  return { subject, text, html };
+}
+
 /** Plantilla para avisos de actividad en el portal (aprobaciones, soporte) */
 export function emailAvisoPortal({
   titulo,
