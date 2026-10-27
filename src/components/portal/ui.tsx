@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { ContextoPortal } from "@/lib/portal/datos";
+import { whatsappHref } from "@/lib/site";
 
 // Piezas compartidas de las pantallas del portal.
 
@@ -84,13 +85,28 @@ export function CabeceraPortal({ titulo, ctx, ruta }: { titulo: string; ctx: Con
   );
 }
 
+/** Cuenta sin obras (p. ej. recién registrada): explica qué verá y cómo empezar. */
 export function SinObra() {
   return (
-    <Tarjeta className="flex flex-col gap-3 text-center">
+    <Tarjeta className="flex flex-col items-center gap-4 text-center">
       <h2 className="h3-dm">Aún no hay un proyecto activo</h2>
-      <p className="text-[15px] leading-[1.55] text-pizarra">
-        Cuando empecemos a trabajar juntos, aquí verás el avance, los entregables y los pagos.
+      <p className="max-w-[460px] text-[15px] leading-[1.55] text-pizarra">
+        Cuando empecemos a trabajar juntos, aquí verás el avance, los entregables y los pagos. ¿Tienes una idea? Cuéntanosla y te
+        escribimos.
       </p>
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <a
+          href={whatsappHref("Hola DevMart, acabo de crear mi cuenta en el portal y quiero contarles mi idea.")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary"
+        >
+          Escribir por WhatsApp
+        </a>
+        <Link href="/contacto" className="btn-secondary">
+          Contar mi idea
+        </Link>
+      </div>
     </Tarjeta>
   );
 }

@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull } from "drizzle-orm";
 import { sealData, unsealData } from "iron-session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -203,4 +203,28 @@ export async function confirmarRegistro(r: Registro): Promise<ResultadoRegistro>
     .where(and(eq(schema.clientes.id, existente.id), eq(schema.clientes.passwordHash, "")))
     .returning({ id: schema.clientes.id });
   return activada ? { estado: "activada", clienteId: activada.id } : { estado: "ya_activa" };
+}
+
+/**
+ * Entrar con Google o GitHub: el proveedor ya verificó el email, así que si no hay cuenta se crea
+ * aquí mismo (sin contraseña: puede crearla después con «¿Olvidaste tu contraseña?»).
+ */
+export async function cuentaDesdeOAuth(
+  emails: string[],
+  nombre: string,
+): Promise<{ estado: "existente" | "creada"; clienteId: number } | { estado: "inactiva" }> {
+  const [existente] = await db()
+    .select({ id: schema.clientes.id, activo: schema.clientes.activo })
+    .from(schema.clientes)
+    .where(inArray(schema.clientes.email, emails))
+    .limit(1);
+  if (existente) return existente.activo ? { estado: "existente", clienteId: existente.id } : { estado: "inactiva" };
+
+  const email = emails[0];
+  const [nuevo] = await db()
+    .insert(schema.clientes)
+    .values({ nombre: (nombre || email.split("@")[0]).slice(0, 120), email })
+    .onConflictDoNothing()
+    .returning({ id: schema.clientes.id });
+  return nuevo ? { estado: "creada", clienteId: nuevo.id } : { estado: "inactiva" };
 }

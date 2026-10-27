@@ -31,11 +31,9 @@ import {
   emailCuentaExistente,
   emailEnlacePortalCliente,
   emailEntrarAdmin,
-  emailNuevoContacto,
 } from "@/lib/email-templates";
 import { avisarAdmin } from "@/lib/portal/avisos";
 import { obraDelCliente } from "@/lib/portal/datos";
-import { borrarProspecto, leerProspecto } from "@/lib/portal/prospecto";
 import { huellaCliente, permitir, registrar } from "@/lib/security";
 import { siteUrl } from "@/lib/site";
 
@@ -296,48 +294,6 @@ export async function establecerClave(_prev: PortalState, fd: FormData): Promise
   await crearSesionCliente(clienteId);
   await registrar("portal.clave_nueva", `cliente #${clienteId}`);
   redirect("/portal");
-}
-
-/* ───────────── Prospectos ───────────── */
-
-const prospectoSchema = z.object({
-  nombre: z.string().trim().min(2, "Escribe tu nombre.").max(100, "El nombre es muy largo."),
-  idea: z.string().trim().max(2000, "Cuéntanos tu idea en menos de 2000 caracteres.").default(""),
-});
-
-/** Quien entró con Google o GitHub sin ser cliente deja sus datos: llegan a Mensajes del panel. */
-export async function registrarProspecto(_prev: PortalState, fd: FormData): Promise<PortalState> {
-  if (!hasDb) return { error: "El portal aún no está disponible." };
-  const prospecto = await leerProspecto();
-  if (!prospecto) return { error: "Pasó demasiado tiempo. Vuelve a entrar con Google o GitHub." };
-  if (!(await permitir(`prospecto:${await huellaCliente()}`, 3, 3600))) {
-    return { error: "Ya recibimos tus datos. Te escribiremos pronto." };
-  }
-  const parsed = prospectoSchema.safeParse(Object.fromEntries(fd));
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
-  const { nombre, idea } = parsed.data;
-
-  const datos = {
-    nombre,
-    email: prospecto.email,
-    telefono: "No especificado",
-    tipo: "Prospecto desde el portal",
-    presupuesto: "Por definir",
-    descripcion: idea || "Entró al portal con su cuenta y pidió que lo contactemos.",
-  };
-  await db().insert(schema.mensajes).values({ ...datos, notas: "Email verificado por Google o GitHub al entrar al portal." });
-  await borrarProspecto();
-  await registrar("portal.prospecto", nombre);
-
-  const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL;
-  if (to) {
-    const plantilla = emailNuevoContacto(datos);
-    await enviarEmail({ to, replyTo: prospecto.email, subject: plantilla.subject, text: plantilla.text, html: plantilla.html }).catch((err) => {
-      console.error("[portal] No se pudo avisar del prospecto:", err);
-      return false;
-    });
-  }
-  return { ok: true, message: `¡Gracias, ${nombre.split(" ")[0]}! Te escribiremos a ${prospecto.email} para hablar de tu proyecto.` };
 }
 
 /* ───────────── Entregables ───────────── */

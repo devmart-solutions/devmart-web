@@ -98,7 +98,7 @@ Ver `.env.example`.
 | --- | --- |
 | `DATABASE_URL`, `DATABASE_URL_UNPOOLED` | Base de datos Neon (las crea la integración de Vercel). Sin ellas el sitio usa el contenido estático y el panel no funciona. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `ADMIN_TOTP_SECRET`, `SESSION_SECRET` | Acceso al panel. Las genera `npm run admin:setup`. |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Acceso con Google y GitHub al panel (después pide el código 2FA) y al portal (entra el cliente cuyo email verificado coincida). URL de retorno: `<sitio>/oauth/callback/google` y `/oauth/callback/github`. Opcional. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Acceso con Google y GitHub al panel (después pide el código 2FA) y al portal (entra el cliente cuyo email verificado coincida; si no tiene cuenta, se le crea). URL de retorno: `<sitio>/oauth/callback/google` y `/oauth/callback/github`. Opcional. |
 | `NEXT_PUBLIC_SITE_URL` | URL pública (sitemap, Open Graph, JSON-LD). Sin ella se usa `http://localhost:3000`. |
 | `NEXT_PUBLIC_EMAIL` | Email de contacto que se muestra en el sitio. |
 | `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL` | Aviso por email de cada mensaje (Resend). Opcional: los mensajes ya quedan en el panel. |

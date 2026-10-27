@@ -7,14 +7,12 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { AvisoPortal, TarjetaAcceso } from "@/components/portal/TarjetaAcceso";
 import { leerSesionCliente } from "@/lib/auth/cliente";
 import { oauthDisponible } from "@/lib/auth/oauth";
-import { leerProspecto } from "@/lib/portal/prospecto";
 import { LoginClienteForm } from "./LoginClienteForm";
-import { ProspectoForm } from "./ProspectoForm";
 
 export const metadata: Metadata = { title: "Entrar" };
 
 const ERRORES: Record<string, string> = {
-  sin_acceso: "Esa cuenta no tiene acceso al portal. Entra con el email con el que trabajas con nosotros o crea tu cuenta.",
+  inactiva: "Tu acceso al portal está desactivado. Escríbenos y lo revisamos.",
   cancelado: "Cancelaste el acceso con Google o GitHub.",
   state: "El acceso tardó demasiado. Vuelve a intentarlo.",
   perfil: "No pudimos leer tu email del proveedor. Inténtalo de nuevo o entra con tu contraseña.",
@@ -45,23 +43,6 @@ async function Opciones({ searchParams }: Pick<PageProps<"/portal/ingreso">, "se
   const codigo = Array.isArray(error) ? error[0] : error;
   const google = oauthDisponible("google");
   const github = oauthDisponible("github");
-
-  // Entró con Google o GitHub y no es cliente: en vez de un error, la invitación a empezar un proyecto.
-  const prospecto = codigo === "sin_acceso" ? await leerProspecto() : null;
-  if (prospecto) {
-    return (
-      <div className="flex flex-col gap-5">
-        <ProspectoForm nombre={prospecto.nombre} email={prospecto.email} />
-        <p className="text-[14px] leading-[1.55] text-pizarra">
-          ¿Ya trabajas con nosotros con otro email?{" "}
-          <Link href="/portal/ingreso" className="font-medium text-cielo-profundo underline-offset-4 hover:underline">
-            Entra con ese
-          </Link>
-          .
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-5">

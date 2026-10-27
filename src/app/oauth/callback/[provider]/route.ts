@@ -1,11 +1,10 @@
-import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { crearSesionCliente } from "@/lib/auth/cliente";
+import { crearSesionCliente, cuentaDesdeOAuth } from "@/lib/auth/cliente";
 import { credenciales } from "@/lib/auth/config";
 import { entradaDe, esProveedor, oauthDisponible, perfilOAuth, validarState, type OAuthProvider, type PerfilOAuth } from "@/lib/auth/oauth";
 import { crearPasoPendiente, createSession } from "@/lib/auth/session";
-import { db, hasDb, schema } from "@/lib/db";
-import { guardarProspecto } from "@/lib/portal/prospecto";
+import { hasDb } from "@/lib/db";
+import { avisarAdmin } from "@/lib/portal/avisos";
 import { huellaCliente, permitir, registrar, reiniciar } from "@/lib/security";
 import { siteUrl } from "@/lib/site";
 
@@ -76,20 +75,22 @@ async function entrarAlPanel(p: OAuthProvider, porCliente: string, con2fa: boole
 async function entrarAlPortal(p: OAuthProvider, perfil: PerfilOAuth, error: Error) {
   if (!hasDb) return error("sin_configurar");
 
-  const [cliente] = await db()
-    .select({ id: schema.clientes.id })
-    .from(schema.clientes)
-    .where(and(inArray(schema.clientes.email, perfil.emails), eq(schema.clientes.activo, true)))
-    .limit(1);
-  if (!cliente) {
-    // No es cliente: le ofrecemos dejar sus datos como prospecto con el email ya verificado.
-    await guardarProspecto({ email: perfil.emails[0], nombre: perfil.nombre.slice(0, 100) });
-    await registrar("portal.oauth_sin_cliente", p);
-    return error("sin_acceso");
-  }
+  // Cliente existente: entra. Nuevo: se le crea la cuenta (es su forma de registrarse).
+  const cuenta = await cuentaDesdeOAuth(perfil.emails, perfil.nombre);
+  if (cuenta.estado === "inactiva") return error("inactiva");
 
   // La cookie del portal es SameSite=Lax: sí viaja en la redirección.
-  await crearSesionCliente(cliente.id);
-  await registrar("portal.ingreso", `cliente #${cliente.id} · ${p}`);
+  await crearSesionCliente(cuenta.clienteId);
+  if (cuenta.estado === "creada") {
+    await registrar("portal.registro", `cliente #${cuenta.clienteId} · ${p}`);
+    await avisarAdmin(`Nuevo registro en el portal: ${perfil.nombre || perfil.emails[0]}`, [
+      `Nombre: ${perfil.nombre || "(sin nombre)"}`,
+      `Email: ${perfil.emails[0]} (verificado por ${p === "google" ? "Google" : "GitHub"})`,
+      "",
+      "Aún no tiene proyectos. Créale una obra desde el panel cuando empiecen a trabajar juntos.",
+    ]);
+  } else {
+    await registrar("portal.ingreso", `cliente #${cuenta.clienteId} · ${p}`);
+  }
   return NextResponse.redirect(new URL("/portal", siteUrl));
 }
