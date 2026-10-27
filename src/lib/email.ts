@@ -6,12 +6,18 @@ import nodemailer from "nodemailer";
 // - SMTP (p. ej. el buzón de Hostinger): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
 // Devuelve false si no hay proveedor o el envío falla.
 
-type Correo = { to: string; subject: string; text: string; replyTo?: string };
+export type Correo = {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+  replyTo?: string;
+};
 
 export const hayProveedorEmail = () =>
   Boolean(process.env.RESEND_API_KEY || (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS));
 
-export async function enviarEmail({ to, subject, text, replyTo }: Correo): Promise<boolean> {
+export async function enviarEmail({ to, subject, text, html, replyTo }: Correo): Promise<boolean> {
   const { RESEND_API_KEY, CONTACT_FROM_EMAIL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
   if (RESEND_API_KEY) {
@@ -24,6 +30,7 @@ export async function enviarEmail({ to, subject, text, replyTo }: Correo): Promi
         ...(replyTo ? { reply_to: replyTo } : {}),
         subject,
         text,
+        ...(html ? { html } : {}),
       }),
     });
     return res.ok;
@@ -43,9 +50,11 @@ export async function enviarEmail({ to, subject, text, replyTo }: Correo): Promi
       replyTo,
       subject,
       text,
+      ...(html ? { html } : {}),
     });
     return true;
   }
 
   return false;
 }
+

@@ -8,6 +8,7 @@ import { borrarPasoPendiente, crearPasoPendiente, createSession, pasoPendienteVa
 import { esSecretoTotp, verifyTotp } from "@/lib/auth/totp";
 import { esBot } from "@/lib/botid";
 import { enviarEmail, hayProveedorEmail } from "@/lib/email";
+import { emailRecuperarAdmin } from "@/lib/email-templates";
 import { huellaCliente, permitir, registrar, reiniciar } from "@/lib/security";
 import { siteUrl } from "@/lib/site";
 
@@ -98,17 +99,12 @@ export async function solicitarEnlace(_prev: LoginState, fd: FormData): Promise<
 
   const token = await crearTokenRecuperacion();
   const enlace = `${siteUrl}/admin/login/nueva?token=${token}`;
+  const plantilla = emailRecuperarAdmin({ url: enlace, minutos: MINUTOS_ENLACE });
   const enviado = await enviarEmail({
     to: cfg.email,
-    subject: "Crea tu nueva contraseña del panel DevMart",
-    text: [
-      "Recibimos una solicitud para crear o cambiar la contraseña del panel de DevMart.",
-      "",
-      `Abre este enlace en los próximos ${MINUTOS_ENLACE} minutos:`,
-      enlace,
-      "",
-      "Si no fuiste tú, ignora este correo: tu contraseña actual sigue funcionando.",
-    ].join("\n"),
+    subject: plantilla.subject,
+    text: plantilla.text,
+    html: plantilla.html,
   }).catch((err) => {
     console.error("[recuperar] Error al enviar el correo:", err);
     return false;

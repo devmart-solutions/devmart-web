@@ -7,8 +7,9 @@ import { iniciarSesion, type LoginState } from "./actions";
 import { inputCls } from "./Tarjeta";
 
 // Paso 1: email y contraseña. Paso 2 (si hay verificación en dos pasos): el código de la app.
-export function LoginForm({ conTotp }: { conTotp: boolean }) {
-  const [state, action, pending] = useActionState<LoginState, FormData>(iniciarSesion, {});
+// Tras entrar con Google o GitHub se empieza directamente en el paso 2.
+export function LoginForm({ conTotp, pasoInicial }: { conTotp: boolean; pasoInicial?: "codigo" }) {
+  const [state, action, pending] = useActionState<LoginState, FormData>(iniciarSesion, pasoInicial ? { paso: pasoInicial } : {});
   const pasoCodigo = state.paso === "codigo";
 
   return (
@@ -23,7 +24,7 @@ export function LoginForm({ conTotp }: { conTotp: boolean }) {
         <>
           <input type="hidden" name="paso" value="codigo" />
           <p className="rounded-xl bg-cielo-tinte px-4 py-3 text-[15px] leading-[1.55] text-noche">
-            Contraseña correcta. Ahora abre tu app de autenticación y escribe el código de 6 dígitos de DevMart.
+            {pasoInicial ? "Cuenta verificada." : "Contraseña correcta."} Ahora abre tu app de autenticación y escribe el código de 6 dígitos de DevMart.
           </p>
           <label className="flex flex-col gap-2 text-[15px] font-medium text-noche">
             Código de verificación

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { EstadoBadge } from "@/components/ProjectCard";
+import { ProyectoJsonLd } from "@/components/JsonLd";
 import { CtaFinal, ImagePlaceholder, Label, Num } from "@/components/ui";
 import { getProyecto, getProyectos } from "@/lib/data";
 
@@ -99,6 +100,16 @@ async function Caso({ params }: Pick<PageProps<"/proyectos/[slug]">, "params">) 
           </article>
         </div>
       </section>
+
+      <ProyectoJsonLd
+        cliente={p.cliente}
+        resumen={p.resumen}
+        slug={p.slug}
+        tipo={p.tipo}
+        stack={p.stack}
+        urlProyecto={p.url}
+        imagen={p.imagen}
+      />
 
       <CtaFinal title="¿Tienes un reto parecido? Hablemos." />
     </>

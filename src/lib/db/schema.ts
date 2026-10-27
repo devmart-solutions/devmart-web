@@ -224,6 +224,8 @@ export const solicitudes = pgTable(
     titulo: text("titulo").notNull(),
     detalle: text("detalle").notNull(),
     estado: text("estado").$type<EstadoSolicitud>().notNull().default("abierta"),
+    /** Respuesta del administrador (visible en el portal). */
+    respuesta: text("respuesta").notNull().default(""),
     creado: timestamp("creado", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("solicitudes_obra_idx").on(t.obraId), uniqueIndex("solicitudes_obra_numero_idx").on(t.obraId, t.numero)],

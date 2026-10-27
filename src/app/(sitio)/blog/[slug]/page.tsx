@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
 import { CtaFinal, Label } from "@/components/ui";
+import { BlogPostingJsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
 import { formatFecha } from "@/lib/blog";
 import { getPost, getPosts } from "@/lib/data";
@@ -61,6 +62,13 @@ async function Post({ params }: Pick<PageProps<"/blog/[slug]">, "params">) {
           </div>
         </div>
       </article>
+      <BlogPostingJsonLd
+        titulo={post.titulo}
+        resumen={post.resumen}
+        fecha={post.fecha}
+        slug={post.slug}
+        categoria={post.categoria}
+      />
       <CtaFinal />
     </>
   );

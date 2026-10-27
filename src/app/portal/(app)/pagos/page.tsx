@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { MessageCircle } from "lucide-react";
 import { CabeceraPortal, CargandoPortal, Chip, SinObra, Tarjeta } from "@/components/portal/ui";
 import { contextoPortal, fechaCorta, pagosDe, pesos } from "@/lib/portal/datos";
+import { whatsappHref } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Pagos" };
 
@@ -25,6 +27,7 @@ async function Pagos({ searchParams }: Pick<PageProps<"/portal/pagos">, "searchP
     );
   }
   const pagos = await pagosDe(ctx);
+  const proyecto = ctx.obra.nombre;
   const total = pagos.reduce((s, p) => s + p.monto, 0);
   const pagado = pagos.filter((p) => p.estado === "pagado").reduce((s, p) => s + p.monto, 0);
 
@@ -70,10 +73,15 @@ async function Pagos({ searchParams }: Pick<PageProps<"/portal/pagos">, "searchP
                   </div>
                 </div>
                 {p.estado === "pendiente" && (
-                  // El pago en línea (Wompi) llega en una fase siguiente.
-                  <button type="button" disabled aria-disabled className="btn-secondary w-full cursor-not-allowed opacity-60 sm:w-fit">
-                    Pagar · Pronto
-                  </button>
+                  // Mientras llega el pago en línea (Wompi), el pago se coordina por WhatsApp.
+                  <a
+                    href={whatsappHref(`Hola DevMart, quiero coordinar el pago «${p.concepto}» (${pesos(p.monto)}) del proyecto ${proyecto}.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary w-full sm:w-fit"
+                  >
+                    <MessageCircle size={18} strokeWidth={1.5} aria-hidden /> Coordinar este pago
+                  </a>
                 )}
               </li>
             ))}

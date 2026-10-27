@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CabeceraPortal, CargandoPortal, Chip, SinObra, Tarjeta } from "@/components/portal/ui";
 import { contextoPortal, fechaCorta, solicitudesDe } from "@/lib/portal/datos";
+import { whatsappHref } from "@/lib/site";
 import { NuevaSolicitud } from "./NuevaSolicitud";
 
 export const metadata: Metadata = { title: "Soporte" };
@@ -33,6 +34,18 @@ async function Soporte({ searchParams }: Pick<PageProps<"/portal/soporte">, "sea
       <Tarjeta>
         <NuevaSolicitud obraId={ctx.obra.id} />
       </Tarjeta>
+      <p className="-mt-2 text-[14px] leading-[1.55] text-pizarra">
+        ¿Es urgente?{" "}
+        <a
+          href={whatsappHref(`Hola DevMart, tengo una solicitud urgente sobre el proyecto ${ctx.obra.nombre}.`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-cielo-profundo underline-offset-4 hover:underline"
+        >
+          Escríbenos por WhatsApp
+        </a>
+        .
+      </p>
 
       <h2 className="h3-dm">Tus solicitudes</h2>
       {solicitudes.length === 0 ? (
@@ -51,6 +64,12 @@ async function Soporte({ searchParams }: Pick<PageProps<"/portal/soporte">, "sea
                   <Chip estado={s.estado} />
                 </div>
                 <p className="text-[14px] leading-[1.55] whitespace-pre-line text-pizarra">{s.detalle}</p>
+                {s.respuesta && (
+                  <div className="rounded-xl bg-cielo-tinte px-4 py-3 flex flex-col gap-1">
+                    <span className="font-semibold text-[13px] text-cielo-profundo">Respuesta de DevMart</span>
+                    <p className="text-[14px] leading-[1.55] whitespace-pre-line text-noche">{s.respuesta}</p>
+                  </div>
+                )}
                 <span className="font-mono text-[12px] text-pizarra">{fechaCorta(s.creado)}</span>
               </Tarjeta>
             </li>

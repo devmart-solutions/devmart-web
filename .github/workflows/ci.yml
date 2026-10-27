@@ -1,4 +1,4 @@
-# Revisa cada push y pull request: lint, tipos, compilación y vulnerabilidades en producción.
+# Revisa cada push y pull request: lint, pruebas, tipos, compilación y vulnerabilidades en producción.
 # La compilación corre sin DATABASE_URL (usa el contenido estático de respaldo).
 name: CI
 
@@ -26,6 +26,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       - run: npm run build
       - name: Vulnerabilidades en dependencias de producción
         run: npm audit --omit=dev --audit-level=high

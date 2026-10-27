@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ChartNoAxesGantt, House, LifeBuoy, Wallet } from "lucide-react";
+import { ChartNoAxesGantt, House, LifeBuoy, PackageCheck, Wallet } from "lucide-react";
 
 const items = [
   { href: "/portal", label: "Inicio", icon: House },
   { href: "/portal/avance", label: "Avance", icon: ChartNoAxesGantt },
+  { href: "/portal/entregables", label: "Entregas", icon: PackageCheck },
   { href: "/portal/pagos", label: "Pagos", icon: Wallet },
   { href: "/portal/soporte", label: "Soporte", icon: LifeBuoy },
 ];
@@ -28,7 +29,7 @@ function Barra({ activo, obra }: { activo: (href: string) => boolean; obra: stri
       aria-label="Portal"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-borde bg-blanco pb-[env(safe-area-inset-bottom)]"
     >
-      <ul className="mx-auto grid max-w-[720px] grid-cols-4">
+      <ul className="mx-auto grid max-w-[720px] grid-cols-5">
         {items.map(({ href, label, icon: Icon }) => (
           <li key={href}>
             <Link

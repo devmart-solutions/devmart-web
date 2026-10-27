@@ -27,7 +27,8 @@ async function Entregables({ searchParams }: Pick<PageProps<"/portal/entregables
       </>
     );
   }
-  const entregables = await entregablesDe(ctx);
+  // Lo que espera la respuesta del cliente va primero; el resto, del más reciente al más antiguo.
+  const entregables = (await entregablesDe(ctx)).sort((a, b) => Number(b.estado === "por_aprobar") - Number(a.estado === "por_aprobar"));
 
   return (
     <>

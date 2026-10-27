@@ -15,6 +15,7 @@ import {
 import { esBot } from "@/lib/botid";
 import { db, hasDb, schema } from "@/lib/db";
 import { enviarEmail } from "@/lib/email";
+import { emailEnlacePortalCliente } from "@/lib/email-templates";
 import { avisarAdmin } from "@/lib/portal/avisos";
 import { obraDelCliente } from "@/lib/portal/datos";
 import { huellaCliente, permitir, registrar } from "@/lib/security";
@@ -52,19 +53,16 @@ export async function solicitarAcceso(_prev: PortalState, fd: FormData): Promise
 
   const token = await crearAccesoCliente(cliente.id);
   const enlace = `${siteUrl}/portal/acceso?token=${token}`;
+  const plantilla = emailEnlacePortalCliente({
+    nombre: cliente.nombre.split(" ")[0],
+    url: enlace,
+    minutos: MINUTOS_ENLACE_CLIENTE,
+  });
   const enviado = await enviarEmail({
     to: email.data,
-    subject: "Tu enlace para entrar al portal de DevMart",
-    text: [
-      `Hola, ${cliente.nombre.split(" ")[0]}:`,
-      "",
-      `Entra a tu portal de cliente con este enlace (vale ${MINUTOS_ENLACE_CLIENTE} minutos y sirve una sola vez):`,
-      enlace,
-      "",
-      "Si no lo pediste, ignora este correo.",
-      "",
-      "DevMart Solutions",
-    ].join("\n"),
+    subject: plantilla.subject,
+    text: plantilla.text,
+    html: plantilla.html,
   }).catch((err) => {
     console.error("[portal] Error al enviar el enlace:", err);
     return false;

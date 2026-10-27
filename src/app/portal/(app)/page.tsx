@@ -58,6 +58,20 @@ async function Inicio({ searchParams }: Pick<PageProps<"/portal">, "searchParams
     <>
       <CabeceraPortal titulo={saludo} ctx={ctx} ruta="/portal" />
 
+      {porAprobar > 0 && (
+        <Link
+          href={conObra("/portal/entregables", ctx)}
+          className="flex items-center gap-4 rounded-[20px] bg-noche p-5 text-blanco transition-opacity hover:opacity-90"
+        >
+          <FileCheck2 size={24} strokeWidth={1.5} className="shrink-0 text-cielo" aria-hidden />
+          <span className="flex flex-1 flex-col">
+            <span className="font-medium">{porAprobar === 1 ? "Tienes 1 entrega por revisar" : `Tienes ${porAprobar} entregas por revisar`}</span>
+            <span className="text-[14px] text-niebla">Apruébala o cuéntanos qué cambiar para seguir avanzando.</span>
+          </span>
+          <ArrowRight size={20} strokeWidth={1.5} className="shrink-0" aria-hidden />
+        </Link>
+      )}
+
       <Tarjeta className="flex flex-col gap-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">

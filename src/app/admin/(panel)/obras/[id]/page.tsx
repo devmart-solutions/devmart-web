@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { AdminForm } from "@/components/admin/AdminForm";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { ImagenField } from "@/components/admin/ImagenField";
-import { AdminHeader, Cargando, Field, fechaHora, Input, Panel, Select } from "@/components/admin/fields";
+import { AdminHeader, Cargando, Field, fechaHora, Input, Panel, Select, Textarea } from "@/components/admin/fields";
 import { Chip, estadosPortal } from "@/components/portal/ui";
 import {
   cambiarEstadoSolicitud,
@@ -238,16 +238,16 @@ async function Detalle({ params }: Pick<PageProps<"/admin/obras/[id]">, "params"
         </AdminForm>
       </Seccion>
 
-      <Seccion titulo="Solicitudes" intro="Lo que el cliente pide desde Soporte. Al marcar una como resuelta, le avisamos por correo.">
+      <Seccion titulo="Solicitudes" intro="Lo que el cliente pide desde Soporte. Escribe una respuesta para avisarle por correo; al marcar como resuelta también le notificamos.">
         {solicitudes.length === 0 ? (
           <Panel>
             <p className="text-[15px] text-pizarra">Sin solicitudes por ahora.</p>
           </Panel>
         ) : (
           solicitudes.map((s) => (
-            <AdminForm key={s.id} action={cambiarEstadoSolicitud} submitLabel="Actualizar">
+            <AdminForm key={s.id} action={cambiarEstadoSolicitud} submitLabel="Guardar">
               <input type="hidden" name="id" value={s.id} />
-              <Panel className="flex flex-col gap-3">
+              <Panel className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="font-medium">
                     <span className="font-mono text-[13px] text-pizarra">#{s.numero}</span> {s.titulo}
@@ -255,12 +255,17 @@ async function Detalle({ params }: Pick<PageProps<"/admin/obras/[id]">, "params"
                   <span className="font-mono text-xs text-pizarra">{fechaHora(s.creado)}</span>
                 </div>
                 <p className="text-[15px] leading-[1.55] whitespace-pre-line text-texto-cuerpo">{s.detalle}</p>
-                <div className="max-w-[220px]">
-                  <Field label="Estado">
-                    <Select name="estado" defaultValue={s.estado}>
-                      <Opciones valores={estadosSolicitud} />
-                    </Select>
+                <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
+                  <Field label="Respuesta al cliente" hint="opcional · se envía por correo al guardar">
+                    <Textarea name="respuesta" defaultValue={s.respuesta} rows={3} maxLength={2000} placeholder="Escribe aquí tu respuesta…" />
                   </Field>
+                  <div className="flex flex-col justify-end">
+                    <Field label="Estado">
+                      <Select name="estado" defaultValue={s.estado}>
+                        <Opciones valores={estadosSolicitud} />
+                      </Select>
+                    </Field>
+                  </div>
                 </div>
               </Panel>
             </AdminForm>

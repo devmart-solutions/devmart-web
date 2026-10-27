@@ -4,6 +4,7 @@ import { readContacto, validateContacto, type ContactoData, type ContactoState }
 import { esBot } from "@/lib/botid";
 import { db, hasDb, schema } from "@/lib/db";
 import { enviarEmail, hayProveedorEmail } from "@/lib/email";
+import { emailNuevoContacto } from "@/lib/email-templates";
 import { huellaCliente, permitir } from "@/lib/security";
 
 function texto(d: ContactoData) {
@@ -30,11 +31,20 @@ async function enviar(d: ContactoData, guardado: boolean): Promise<boolean> {
   const { CONTACT_TO_EMAIL, FORMSPREE_ENDPOINT } = process.env;
 
   if (CONTACT_TO_EMAIL && hayProveedorEmail()) {
+    const plantilla = emailNuevoContacto({
+      nombre: d.nombre,
+      email: d.email,
+      telefono: d.telefono,
+      tipo: d.tipo,
+      presupuesto: d.presupuesto,
+      descripcion: d.descripcion,
+    });
     return enviarEmail({
       to: CONTACT_TO_EMAIL,
       replyTo: d.email,
-      subject: `Nuevo proyecto: ${d.tipo} — ${d.nombre}`,
-      text: texto(d),
+      subject: plantilla.subject,
+      text: plantilla.text,
+      html: plantilla.html,
     });
   }
 

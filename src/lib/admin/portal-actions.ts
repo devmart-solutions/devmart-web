@@ -11,6 +11,7 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { db, schema } from "@/lib/db";
 import { estadosEtapa, estadosPago, estadosSolicitud } from "@/lib/db/schema";
 import { enviarEmail, hayProveedorEmail } from "@/lib/email";
+import { emailEnlacePortalCliente } from "@/lib/email-templates";
 import { avisarClienteDeObra } from "@/lib/portal/avisos";
 import { registrar } from "@/lib/security";
 import { siteUrl } from "@/lib/site";
@@ -109,21 +110,17 @@ export async function enviarAccesoCliente(_prev: FormState, fd: FormData): Promi
   if (!hayProveedorEmail()) return { ok: false, errors: ["El envío de correos no está configurado (SMTP o Resend)."] };
 
   const token = await crearAccesoCliente(cliente.id);
+  const enlace = `${siteUrl}/portal/acceso?token=${token}`;
+  const plantilla = emailEnlacePortalCliente({
+    nombre: cliente.nombre.split(" ")[0],
+    url: enlace,
+    minutos: MINUTOS_ENLACE_CLIENTE,
+  });
   const ok = await enviarEmail({
     to: cliente.email,
-    subject: "Tu acceso al portal de clientes de DevMart",
-    text: [
-      `Hola, ${cliente.nombre.split(" ")[0]}:`,
-      "",
-      "Ya tienes acceso a tu portal de cliente, donde verás el avance de tu proyecto, los entregables y los pagos.",
-      "",
-      `Entra con este enlace (vale ${MINUTOS_ENLACE_CLIENTE} minutos y sirve una sola vez):`,
-      `${siteUrl}/portal/acceso?token=${token}`,
-      "",
-      `Cuando venza, pide uno nuevo en ${siteUrl}/portal/ingreso con este mismo email.`,
-      "",
-      "DevMart Solutions",
-    ].join("\n"),
+    subject: plantilla.subject,
+    text: plantilla.text,
+    html: plantilla.html,
   }).catch(() => false);
   if (!ok) return { ok: false, errors: ["No se pudo enviar el correo. Inténtalo de nuevo."] };
   await registrar("cliente.acceso_enviado", `#${cliente.id}`);
@@ -306,7 +303,11 @@ export async function eliminarPago(fd: FormData) {
 
 /* ───────────── Solicitudes ───────────── */
 
-const solicitudEstadoSchema = z.object({ id, estado: z.enum(estadosSolicitud, "Elige el estado.") });
+const solicitudEstadoSchema = z.object({
+  id,
+  estado: z.enum(estadosSolicitud, "Elige el estado."),
+  respuesta: z.string().trim().max(2000, "Respuesta: máximo 2000 caracteres.").default(""),
+});
 
 export async function cambiarEstadoSolicitud(_prev: FormState, fd: FormData): Promise<FormState> {
   await requireAdmin();
@@ -314,17 +315,24 @@ export async function cambiarEstadoSolicitud(_prev: FormState, fd: FormData): Pr
   if (!parsed.success) return errores(parsed.error);
   const [fila] = await db()
     .update(schema.solicitudes)
-    .set({ estado: parsed.data.estado })
+    .set({ estado: parsed.data.estado, respuesta: parsed.data.respuesta })
     .where(eq(schema.solicitudes.id, parsed.data.id))
     .returning({ numero: schema.solicitudes.numero, obraId: schema.solicitudes.obraId, titulo: schema.solicitudes.titulo });
   if (!fila) return { ok: false, errors: ["Solicitud no encontrada."] };
   await registrar("solicitud.estado", `#${fila.numero} → ${parsed.data.estado} · obra #${fila.obraId}`);
   if (parsed.data.estado === "resuelta") {
-    await avisarClienteDeObra(fila.obraId, `Resolvimos tu solicitud #${fila.numero}`, [
+    const lineas = [
       `Tu solicitud #${fila.numero} «${fila.titulo}» quedó resuelta.`,
+      ...(parsed.data.respuesta ? [`Respuesta: ${parsed.data.respuesta}`] : []),
       "Si algo no quedó como esperabas, abre una nueva desde Soporte.",
+    ];
+    await avisarClienteDeObra(fila.obraId, `Resolvimos tu solicitud #${fila.numero}`, lineas);
+  } else if (parsed.data.respuesta) {
+    await avisarClienteDeObra(fila.obraId, `Respuesta a tu solicitud #${fila.numero}`, [
+      `Sobre tu solicitud #${fila.numero} «${fila.titulo}»:`,
+      parsed.data.respuesta,
     ]);
   }
   refresh();
-  return { ok: true, message: "Estado actualizado." };
+  return { ok: true, message: "Solicitud actualizada." };
 }
