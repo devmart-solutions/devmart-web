@@ -5,6 +5,7 @@ import { embedDe, nombrePublico, type ItemMuro, type OpinionPublica } from "./co
 import { getPosts } from "./data";
 import { db, hasDb, schema } from "./db";
 import { getInstagramMedia } from "./instagram";
+import { getTikTokVideos } from "./tiktok";
 import { getVideos } from "./youtube";
 
 export const TAGS_COMUNIDAD = { publicaciones: "publicaciones", opiniones: "opiniones" } as const;
@@ -35,11 +36,12 @@ async function getPublicaciones(): Promise<ItemMuro[]> {
   }));
 }
 
-/** Todo lo que sale en el muro, del más reciente al más antiguo: redes, Instagram y YouTube automáticos, y blog. */
+/** Todo lo que sale en el muro, del más reciente al más antiguo: redes, Instagram, TikTok y YouTube automáticos, y blog. */
 export async function getMuro(): Promise<ItemMuro[]> {
-  const [publicaciones, instagram, videos, posts] = await Promise.all([
+  const [publicaciones, instagram, tiktok, videos, posts] = await Promise.all([
     getPublicaciones(),
     getInstagramMedia(),
+    getTikTokVideos(),
     getVideos(),
     getPosts(),
   ]);
@@ -60,6 +62,23 @@ export async function getMuro(): Promise<ItemMuro[]> {
         imagen: m.imagen,
         imagenAlt: m.texto ? m.texto.slice(0, 120) : "Publicación de DevMart en Instagram",
         fecha: m.fecha,
+        destacada: false,
+        embed,
+      })),
+    // Igual con los videos de TikTok.
+    ...tiktok
+      .map((v) => ({ v, embed: embedDe("tiktok", v.url) }))
+      .filter(({ embed }) => embed && !enlazados.has(embed))
+      .map(({ v, embed }) => ({
+        clave: `tt-${v.id}`,
+        tipo: "tiktok" as const,
+        publicacionId: null,
+        titulo: "",
+        texto: v.texto,
+        url: v.url,
+        imagen: v.imagen,
+        imagenAlt: v.texto ? v.texto.slice(0, 120) : "Video de DevMart en TikTok",
+        fecha: v.fecha,
         destacada: false,
         embed,
       })),
