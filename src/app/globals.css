@@ -196,3 +196,191 @@
     color: var(--color-noche);
   }
 }
+
+/* ---------- Animaciones de la marca ---------- */
+
+/* Aparición al hacer scroll (componente Revelar). Sin JS el contenido se ve normal. */
+.revelar {
+  transition:
+    opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--retraso, 0ms),
+    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--retraso, 0ms);
+}
+.revelar[data-revelar="oculto"] {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+/* Tarjeta 3D con brillo que sigue al cursor (componente TarjetaViva). */
+.tarjeta-viva {
+  position: relative;
+  isolation: isolate;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 250ms ease-out, box-shadow 250ms ease, border-color 250ms ease;
+  will-change: transform;
+}
+.tarjeta-viva::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), rgb(62 193 243 / 0.22), transparent 60%);
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+.tarjeta-viva:hover {
+  border-color: var(--color-cielo);
+  box-shadow: var(--shadow-elevada);
+}
+.tarjeta-viva:hover::before {
+  opacity: 1;
+}
+
+/* Fondo de manchas cielo que se desplazan despacio. */
+@keyframes aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -6%, 0) scale(1.12);
+  }
+}
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  animation: aurora 14s ease-in-out infinite;
+}
+.aurora::before {
+  top: -20vmax;
+  left: -12vmax;
+  background: var(--color-cielo);
+  opacity: 0.35;
+}
+.aurora::after {
+  right: -14vmax;
+  bottom: -24vmax;
+  background: var(--color-blanco);
+  animation-delay: -7s;
+}
+
+/* Anillo que late alrededor de iconos y del botón de reproducir. */
+@keyframes pulso {
+  0% {
+    box-shadow: 0 0 0 0 rgb(62 193 243 / 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgb(62 193 243 / 0);
+  }
+}
+.icono-pulso,
+.play-pulso {
+  animation: pulso 2.4s ease-out infinite;
+}
+
+/* Reflejo que cruza el botón principal en hover. */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.45) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 600ms ease;
+}
+.btn-primary:hover::after {
+  transform: translateX(120%);
+}
+
+/* Palabra resaltada del titular con subrayado cielo que se dibuja. */
+@keyframes trazo {
+  from {
+    background-size: 0% 0.18em;
+  }
+  to {
+    background-size: 100% 0.18em;
+  }
+}
+.resaltado {
+  background: linear-gradient(var(--color-cielo), var(--color-cielo)) no-repeat 0 92% / 100% 0.18em;
+  animation: trazo 900ms 400ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Cinta de texto en movimiento continuo. */
+@keyframes cinta {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.cinta {
+  animation: cinta 32s linear infinite;
+}
+.cinta-pausa:hover .cinta {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revelar,
+  .revelar[data-revelar="oculto"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .tarjeta-viva {
+    transform: none;
+  }
+  .aurora::before,
+  .aurora::after,
+  .icono-pulso,
+  .play-pulso,
+  .cinta,
+  .resaltado {
+    animation: none;
+  }
+  .btn-primary::after {
+    display: none;
+  }
+}
+
+/* ---------- Muro Comunidad ---------- */
+@keyframes muro-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+.muro-tarjeta {
+  animation: muro-entrada 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.muro-portada {
+  background-size: 200% 200%;
+  animation: aurora-gradiente 8s ease infinite;
+}
+@keyframes aurora-gradiente {
+  50% {
+    background-position: 100% 100%;
+  }
+}
+.muro-instagram { background-image: linear-gradient(135deg, #0b0d12, #1e8fd0, #3ec1f3); }
+.muro-tiktok { background-image: linear-gradient(135deg, #0b0d12, #1a2230, #3ec1f3); }
+.muro-facebook { background-image: linear-gradient(135deg, #1e8fd0, #0b0d12); }
+.muro-linkedin { background-image: linear-gradient(135deg, #1a2230, #1e8fd0); }
+.muro-x { background-image: linear-gradient(135deg, #0b0d12, #4a5262); }
+.muro-youtube { background-image: linear-gradient(135deg, #0b0d12, #1e8fd0); }
+.muro-blog { background-image: linear-gradient(135deg, #3ec1f3, #1e8fd0, #0b0d12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .muro-tarjeta,
+  .muro-portada {
+    animation: none;
+  }
+}

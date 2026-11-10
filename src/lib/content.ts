@@ -202,3 +202,28 @@ export const presupuestos = [
   "$8.000.000 – $20.000.000 COP",
   "Más de $20.000.000 COP",
 ] as const;
+
+/** Misión, visión y objetivo de la empresa (página Nosotros y portada). */
+export const identidad: { clave: "mision" | "vision" | "objetivo"; titulo: string; frase: string; texto: string }[] = [
+  {
+    clave: "mision",
+    titulo: "Misión",
+    frase: "Convertir ideas en software que funciona.",
+    texto:
+      "Acompañamos a personas y negocios desde la idea hasta el producto terminado: web, móvil o lo que haga falta. Con prototipo primero, entregas por etapas y explicaciones sin tecnicismos.",
+  },
+  {
+    clave: "vision",
+    titulo: "Visión",
+    frase: "Ser el estudio de confianza para digitalizar negocios en Colombia.",
+    texto:
+      "Queremos que cualquier negocio, grande o pequeño, pueda tener tecnología a su medida. Desde Cartagena, reconocidos por cumplir lo que prometemos y por hablar claro.",
+  },
+  {
+    clave: "objetivo",
+    titulo: "Objetivo",
+    frase: "Que cada cliente salga con un producto propio y listo para crecer.",
+    texto:
+      "Entregamos el código, los accesos y la documentación de todo lo que construimos. Tu producto queda funcionando, lo entiendes y no dependes de nosotros para seguir.",
+  },
+];
