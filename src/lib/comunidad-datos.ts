@@ -4,6 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { embedDe, nombrePublico, type ItemMuro, type OpinionPublica } from "./comunidad";
 import { getPosts } from "./data";
 import { db, hasDb, schema } from "./db";
+import { getInstagramMedia } from "./instagram";
 import { getVideos } from "./youtube";
 
 export const TAGS_COMUNIDAD = { publicaciones: "publicaciones", opiniones: "opiniones" } as const;
@@ -34,12 +35,34 @@ async function getPublicaciones(): Promise<ItemMuro[]> {
   }));
 }
 
-/** Todo lo que sale en el muro, del más reciente al más antiguo: redes, videos de YouTube y blog. */
+/** Todo lo que sale en el muro, del más reciente al más antiguo: redes, Instagram y YouTube automáticos, y blog. */
 export async function getMuro(): Promise<ItemMuro[]> {
-  const [publicaciones, videos, posts] = await Promise.all([getPublicaciones(), getVideos(), getPosts()]);
+  const [publicaciones, instagram, videos, posts] = await Promise.all([
+    getPublicaciones(),
+    getInstagramMedia(),
+    getVideos(),
+    getPosts(),
+  ]);
   const enlazados = new Set(publicaciones.map((p) => p.embed));
   const items: ItemMuro[] = [
     ...publicaciones,
+    // Las de Instagram que ya enlazaste en el panel no se repiten.
+    ...instagram
+      .map((m) => ({ m, embed: embedDe("instagram", m.url) }))
+      .filter(({ embed }) => !enlazados.has(embed))
+      .map(({ m, embed }) => ({
+        clave: `ig-${m.id}`,
+        tipo: "instagram" as const,
+        publicacionId: null,
+        titulo: "",
+        texto: m.texto,
+        url: m.url,
+        imagen: m.imagen,
+        imagenAlt: m.texto ? m.texto.slice(0, 120) : "Publicación de DevMart en Instagram",
+        fecha: m.fecha,
+        destacada: false,
+        embed,
+      })),
     ...videos
       .filter((v) => !enlazados.has(`https://www.youtube-nocookie.com/embed/${v.id}`))
       .map((v) => ({
