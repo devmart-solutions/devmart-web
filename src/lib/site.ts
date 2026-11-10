@@ -15,6 +15,7 @@ export const nav = [
   { href: "/proyectos", label: "Proyectos" },
   { href: "/nosotros", label: "Nosotros" },
   { href: "/blog", label: "Blog" },
+  { href: "/comunidad", label: "Comunidad" },
   { href: "/precios", label: "Precios" },
 ] as const;
 
@@ -34,7 +35,13 @@ export function whatsappHref(message = WHATSAPP_MENSAJE) {
 /** Coordenadas del estudio (Cartagena de Indias) que muestra el pie. */
 export const coordenadas = "10.39° N · 75.48° O";
 
-export type RedSocial = "instagram" | "linkedin" | "tiktok" | "facebook" | "github" | "x";
+export type RedSocial = "instagram" | "youtube" | "linkedin" | "tiktok" | "facebook" | "github" | "x";
+
+/** Canal de YouTube: su feed RSS alimenta la sección de videos. */
+export const YOUTUBE_CANAL = {
+  url: process.env.NEXT_PUBLIC_YOUTUBE || "https://www.youtube.com/@devmartsolutions",
+  id: "UCiFnEGD4sBWGqiMfGnclTMA",
+};
 
 /**
  * Perfiles en redes. Cada uno aparece en el pie solo cuando su variable tiene la URL del perfil.
@@ -42,6 +49,7 @@ export type RedSocial = "instagram" | "linkedin" | "tiktok" | "facebook" | "gith
  */
 const perfiles: { red: RedSocial; label: string; url: string | undefined }[] = [
   { red: "instagram", label: "Instagram", url: process.env.NEXT_PUBLIC_INSTAGRAM },
+  { red: "youtube", label: "YouTube", url: YOUTUBE_CANAL.url },
   { red: "linkedin", label: "LinkedIn", url: process.env.NEXT_PUBLIC_LINKEDIN },
   { red: "tiktok", label: "TikTok", url: process.env.NEXT_PUBLIC_TIKTOK },
   { red: "facebook", label: "Facebook", url: process.env.NEXT_PUBLIC_FACEBOOK },

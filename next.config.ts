@@ -22,7 +22,7 @@ const csp = [
   "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com https:",
   "font-src 'self' data:",
   `connect-src 'self' ${ga} ${plausibleOrigin} https://vercel.live wss://ws-us3.pusher.com`,
-  "frame-src https://vercel.live",
+  "frame-src https://vercel.live https://www.youtube-nocookie.com https://www.instagram.com https://www.tiktok.com https://www.facebook.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

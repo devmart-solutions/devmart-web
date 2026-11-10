@@ -56,7 +56,7 @@ export function Header() {
           </span>
         </div>
 
-        <nav aria-label="Principal" className="hidden items-center gap-[30px] lg:flex">
+        <nav aria-label="Principal" className="hidden items-center gap-5 lg:flex xl:gap-[30px]">
           {nav.map((item, i) => (
             <Link
               key={item.href}
@@ -84,7 +84,7 @@ export function Header() {
             className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-full text-[15px] font-medium text-noche transition-colors hover:text-cielo-profundo md:h-12 md:border md:border-borde md:px-4 md:hover:border-cielo-profundo"
           >
             <CircleUserRound size={22} strokeWidth={1.5} aria-hidden />
-            <span className="hidden md:inline">Acceder</span>
+            <span className="hidden md:inline lg:hidden xl:inline">Acceder</span>
           </Link>
           <Link
             href="/contacto"

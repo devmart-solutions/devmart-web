@@ -109,3 +109,35 @@ export async function obtenerEquipo() {
   const valor = (clave: string) => rows.find((r) => r.clave === clave)?.valor ?? "";
   return { foto: valor(AJUSTES.fotoEquipo) || null, fotoAlt: valor(AJUSTES.fotoEquipoAlt) };
 }
+
+/* ───────────── Comunidad ───────────── */
+
+export async function listarPublicacionesAdmin() {
+  const d = await guard();
+  return d.select().from(schema.publicaciones).orderBy(desc(schema.publicaciones.fecha), desc(schema.publicaciones.id));
+}
+
+/** Opiniones con su autor; las pendientes primero. */
+export async function listarOpinionesAdmin() {
+  const d = await guard();
+  const filas = await d
+    .select({
+      id: schema.opiniones.id,
+      texto: schema.opiniones.texto,
+      valoracion: schema.opiniones.valoracion,
+      estado: schema.opiniones.estado,
+      respuesta: schema.opiniones.respuesta,
+      creado: schema.opiniones.creado,
+      clienteId: schema.clientes.id,
+      cliente: schema.clientes.nombre,
+      empresa: schema.clientes.empresa,
+      publicacion: schema.publicaciones.texto,
+      red: schema.publicaciones.red,
+    })
+    .from(schema.opiniones)
+    .innerJoin(schema.clientes, eq(schema.opiniones.clienteId, schema.clientes.id))
+    .leftJoin(schema.publicaciones, eq(schema.opiniones.publicacionId, schema.publicaciones.id))
+    .orderBy(desc(schema.opiniones.creado));
+  const orden = { pendiente: 0, aprobada: 1, rechazada: 2 } as const;
+  return filas.sort((a, b) => orden[a.estado] - orden[b.estado]);
+}

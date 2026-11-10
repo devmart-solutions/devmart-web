@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Code2, Layers, MousePointerClick } from "lucide-react";
 import { Cube } from "@/components/Cube";
+import { Identidad } from "@/components/Identidad";
+import { Revelar } from "@/components/Revelar";
+import { TarjetaViva } from "@/components/TarjetaViva";
 import { CtaFinal, Label, Num, SectionHead } from "@/components/ui";
 import { proceso } from "@/lib/content";
 import { getFotoEquipo } from "@/lib/data";
@@ -46,10 +49,13 @@ export default function NosotrosPage() {
             funcionando: en la web, en el móvil o donde haga falta.
           </p>
         </div>
-        <div className="flex min-h-[320px] items-center justify-center rounded-panel bg-cielo-tinte">
-          <Cube size={160} className="h-auto w-[130px] md:w-[160px]" />
+        <div className="cube-hover relative flex min-h-[320px] items-center justify-center overflow-hidden rounded-panel bg-cielo-tinte">
+          <div aria-hidden className="aurora pointer-events-none absolute inset-0" />
+          <Cube size={160} className="cube-float relative h-auto w-[130px] md:w-[160px]" />
         </div>
       </section>
+
+      <Identidad />
 
       {/* Fundador */}
       <section className="bg-nube py-24">
@@ -76,14 +82,18 @@ export default function NosotrosPage() {
       {/* Forma de trabajo */}
       <section className="py-24">
         <div className="container-dm flex flex-col gap-12">
-          <SectionHead label="Cómo trabajamos" title="Tres reglas que no negociamos." />
-          <div className="grid gap-6 md:grid-cols-3">
-            {principios.map(({ icon: Icon, titulo, texto }) => (
-              <div key={titulo} className="flex flex-col gap-4 rounded-card border border-borde p-7">
+          <Revelar>
+            <SectionHead label="Cómo trabajamos" title="Tres reglas que no negociamos." />
+          </Revelar>
+          <div className="grid gap-6 md:grid-cols-3" style={{ perspective: "1000px" }}>
+            {principios.map(({ icon: Icon, titulo, texto }, i) => (
+              <Revelar key={titulo} retraso={i * 120} className="h-full">
+              <TarjetaViva className="flex h-full flex-col gap-4 rounded-card border border-borde bg-blanco p-7">
                 <Icon size={28} strokeWidth={1.5} className="text-cielo-profundo" aria-hidden />
                 <h3 className="h3-dm">{titulo}</h3>
                 <p className="text-base leading-[1.55] text-texto-cuerpo text-pretty">{texto}</p>
-              </div>
+              </TarjetaViva>
+              </Revelar>
             ))}
           </div>
 

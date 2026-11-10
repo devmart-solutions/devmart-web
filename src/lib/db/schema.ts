@@ -236,3 +236,52 @@ export const solicitudes = pgTable(
   },
   (t) => [index("solicitudes_obra_idx").on(t.obraId), uniqueIndex("solicitudes_obra_numero_idx").on(t.obraId, t.numero)],
 );
+
+/* ───────────── Comunidad ─────────────
+   Muro público: publicaciones de redes que el admin enlaza desde el panel y opiniones de clientes. */
+
+export const redesPublicacion = ["instagram", "tiktok", "facebook", "linkedin", "x", "youtube"] as const;
+export type RedPublicacion = (typeof redesPublicacion)[number];
+
+export const estadosOpinion = ["pendiente", "aprobada", "rechazada"] as const;
+export type EstadoOpinion = (typeof estadosOpinion)[number];
+
+/** Publicación de una red social enlazada en el muro. Los videos de YouTube entran solos por RSS. */
+export const publicaciones = pgTable(
+  "publicaciones",
+  {
+    id: serial("id").primaryKey(),
+    red: text("red").$type<RedPublicacion>().notNull(),
+    url: text("url").notNull(),
+    texto: text("texto").notNull(),
+    /** Portada en Vercel Blob; null = tarjeta con el color de la red. */
+    imagen: text("imagen"),
+    imagenAlt: text("imagen_alt").notNull().default(""),
+    /** Fecha ISO (AAAA-MM-DD) en que se publicó en la red. */
+    fecha: text("fecha").notNull(),
+    destacada: boolean("destacada").notNull().default(false),
+    publicado: boolean("publicado").notNull().default(true),
+    creado: timestamp("creado", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("publicaciones_fecha_idx").on(t.fecha)],
+);
+
+/** Opinión o experiencia de un cliente, sobre DevMart o sobre una publicación. Se publica al aprobarla. */
+export const opiniones = pgTable(
+  "opiniones",
+  {
+    id: serial("id").primaryKey(),
+    clienteId: integer("cliente_id")
+      .notNull()
+      .references(() => clientes.id, { onDelete: "cascade" }),
+    publicacionId: integer("publicacion_id").references(() => publicaciones.id, { onDelete: "set null" }),
+    texto: text("texto").notNull(),
+    /** 1 a 5 estrellas. */
+    valoracion: integer("valoracion").notNull(),
+    estado: text("estado").$type<EstadoOpinion>().notNull().default("pendiente"),
+    /** Respuesta pública de DevMart. */
+    respuesta: text("respuesta").notNull().default(""),
+    creado: timestamp("creado", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("opiniones_estado_idx").on(t.estado), index("opiniones_publicacion_idx").on(t.publicacionId)],
+);

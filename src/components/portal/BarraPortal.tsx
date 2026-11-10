@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ChartNoAxesGantt, House, LifeBuoy, PackageCheck, Wallet } from "lucide-react";
+import { ChartNoAxesGantt, House, LifeBuoy, MessageSquareHeart, PackageCheck, Wallet } from "lucide-react";
 
 const items = [
   { href: "/portal", label: "Inicio", icon: House },
@@ -10,6 +10,7 @@ const items = [
   { href: "/portal/entregables", label: "Entregas", icon: PackageCheck },
   { href: "/portal/pagos", label: "Pagos", icon: Wallet },
   { href: "/portal/soporte", label: "Soporte", icon: LifeBuoy },
+  { href: "/comunidad#opiniones", label: "Opinar", icon: MessageSquareHeart },
 ];
 
 /** Barra inferior del portal (móvil primero). Conserva la obra elegida (?obra=). */
@@ -29,11 +30,11 @@ function Barra({ activo, obra }: { activo: (href: string) => boolean; obra: stri
       aria-label="Portal"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-borde bg-blanco pb-[env(safe-area-inset-bottom)]"
     >
-      <ul className="mx-auto grid max-w-[720px] grid-cols-5">
+      <ul className="mx-auto grid max-w-[720px] grid-cols-6">
         {items.map(({ href, label, icon: Icon }) => (
           <li key={href}>
             <Link
-              href={obra ? `${href}?obra=${encodeURIComponent(obra)}` : href}
+              href={obra && href.startsWith("/portal") ? `${href}?obra=${encodeURIComponent(obra)}` : href}
               aria-current={activo(href) ? "page" : undefined}
               className="flex h-16 flex-col items-center justify-center gap-1 text-[12px] font-medium text-pizarra transition-colors hover:text-noche aria-[current=page]:text-cielo-profundo"
             >

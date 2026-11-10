@@ -1,4 +1,4 @@
-import { siFacebook, siGithub, siInstagram, siTiktok, siWhatsapp, siX } from "simple-icons";
+import { siFacebook, siGithub, siInstagram, siTiktok, siWhatsapp, siX, siYoutube } from "simple-icons";
 import type { RedSocial } from "@/lib/site";
 
 // Logos de marca (simple-icons, CC0). LinkedIn no está en simple-icons: se dibuja su monograma.
@@ -7,6 +7,7 @@ const LINKEDIN =
 
 const paths: Record<RedSocial | "whatsapp", string> = {
   instagram: siInstagram.path,
+  youtube: siYoutube.path,
   linkedin: LINKEDIN,
   tiktok: siTiktok.path,
   facebook: siFacebook.path,

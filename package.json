@@ -10,7 +10,8 @@
     "test": "tsx --test src/lib/*.test.ts",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx scripts/seed.ts",
-    "admin:setup": "tsx scripts/admin-setup.ts"
+    "admin:setup": "tsx scripts/admin-setup.ts",
+    "tiktok:setup": "tsx scripts/tiktok-setup.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -20,7 +21,7 @@
     "iron-session": "^9.0.1",
     "lucide-react": "^1.58.0",
     "next": "16.4.2",
-    "nodemailer": "^10.1.2",
+    "nodemailer": "^10.2.1",
     "otpauth": "^9.5.2",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
@@ -46,5 +47,10 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "^4.6.7"
+    }
   }
 }
