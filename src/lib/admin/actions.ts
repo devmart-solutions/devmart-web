@@ -125,6 +125,8 @@ const postSchema = z.object({
   lecturaMin: z.string().default(""),
   cuerpo: texto(50, 60000, "Contenido"),
   publicado: z.string().optional(),
+  imagenAlt: z.string().trim().max(200, "Texto alternativo: máximo 200 caracteres.").default(""),
+  quitarImagen: z.string().optional(),
 });
 
 export async function guardarPost(_prev: FormState, fd: FormData): Promise<FormState> {
@@ -133,10 +135,27 @@ export async function guardarPost(_prev: FormState, fd: FormData): Promise<FormS
   const parsed = postSchema.safeParse(campos(fd));
   if (!parsed.success) return errores(parsed.error);
   const v = parsed.data;
+  const archivo = archivoDe(fd, "imagen");
+  const [actual] = id
+    ? await db().select({ imagen: schema.posts.imagen }).from(schema.posts).where(eq(schema.posts.id, id)).limit(1)
+    : [];
+  const quitar = v.quitarImagen === "on" && !archivo;
+  if ((archivo || (actual?.imagen && !quitar)) && !v.imagenAlt) {
+    return { ok: false, errors: ["Texto alternativo: describe la portada para lectores de pantalla y buscadores."] };
+  }
+  const slug = v.slug || slugify(v.titulo);
+  let imagen = quitar ? null : (actual?.imagen ?? null);
+  if (archivo) {
+    const subida = await subirImagen(archivo, `blog/${slug}`);
+    if ("error" in subida) return { ok: false, errors: [subida.error] };
+    imagen = subida.url;
+  }
   const palabras = v.cuerpo.split(/\s+/).length;
   const valores = {
     titulo: v.titulo,
-    slug: v.slug || slugify(v.titulo),
+    slug,
+    imagen,
+    imagenAlt: imagen ? v.imagenAlt : "",
     resumen: v.resumen,
     categoria: v.categoria,
     fecha: v.fecha,
@@ -152,9 +171,11 @@ export async function guardarPost(_prev: FormState, fd: FormData): Promise<FormS
       await db().insert(schema.posts).values(valores);
     }
   } catch (err) {
+    if (archivo) await borrarImagen(imagen);
     if (esDuplicado(err)) return { ok: false, errors: ["Ya existe un artículo con ese slug."] };
     throw err;
   }
+  if (actual?.imagen && actual.imagen !== imagen) await borrarImagen(actual.imagen);
   updateTag(TAGS.posts);
   await registrar(id ? "post.editado" : "post.creado", valores.slug);
   if (!id) redirect("/admin/blog");
@@ -165,7 +186,8 @@ export async function eliminarPost(fd: FormData) {
   await requireAdmin();
   const id = idDe(fd);
   if (id) {
-    await db().delete(schema.posts).where(eq(schema.posts.id, id));
+    const [borrado] = await db().delete(schema.posts).where(eq(schema.posts.id, id)).returning({ imagen: schema.posts.imagen });
+    await borrarImagen(borrado?.imagen);
     updateTag(TAGS.posts);
     await registrar("post.eliminado", `#${id}`);
   }

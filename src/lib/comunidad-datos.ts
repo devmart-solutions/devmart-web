@@ -1,10 +1,12 @@
 import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
-import { embedDe, nombrePublico, type ItemMuro, type OpinionPublica } from "./comunidad";
+import { portadaDe } from "./blog";
+import { embedDe, intercalar, nombrePublico, type ItemMuro, type OpinionPublica } from "./comunidad";
 import { getPosts } from "./data";
 import { db, hasDb, schema } from "./db";
 import { getInstagramMedia } from "./instagram";
+import { getNoticias } from "./noticias";
 import { getTikTokVideos } from "./tiktok";
 import { getVideos } from "./youtube";
 
@@ -36,14 +38,18 @@ async function getPublicaciones(): Promise<ItemMuro[]> {
   }));
 }
 
-/** Todo lo que sale en el muro, del más reciente al más antiguo: redes, Instagram, TikTok y YouTube automáticos, y blog. */
+/**
+ * Todo lo que sale en el muro: redes, Instagram, TikTok y YouTube automáticos y blog, del más reciente
+ * al más antiguo, con noticias de tecnología de otros medios intercaladas.
+ */
 export async function getMuro(): Promise<ItemMuro[]> {
-  const [publicaciones, instagram, tiktok, videos, posts] = await Promise.all([
+  const [publicaciones, instagram, tiktok, videos, posts, noticias] = await Promise.all([
     getPublicaciones(),
     getInstagramMedia(),
     getTikTokVideos(),
     getVideos(),
     getPosts(),
+    getNoticias(),
   ]);
   const enlazados = new Set(publicaciones.map((p) => p.embed));
   const items: ItemMuro[] = [
@@ -104,14 +110,32 @@ export async function getMuro(): Promise<ItemMuro[]> {
       titulo: p.titulo,
       texto: p.resumen,
       url: `/blog/${p.slug}`,
-      imagen: null,
-      imagenAlt: "",
+      ...portadaDe(p),
       fecha: p.fecha,
       destacada: false,
       embed: null,
     })),
   ];
-  return items.sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const externas: ItemMuro[] = noticias
+    .sort((a, b) => b.fecha.localeCompare(a.fecha))
+    .map((n) => ({
+      clave: `nt-${n.url}`,
+      tipo: "noticia" as const,
+      publicacionId: null,
+      titulo: n.titulo,
+      texto: n.resumen,
+      url: n.url,
+      imagen: n.imagen,
+      imagenAlt: "",
+      fecha: n.fecha,
+      destacada: false,
+      embed: null,
+      fuente: n.fuente,
+    }));
+  return intercalar(
+    items.sort((a, b) => b.fecha.localeCompare(a.fecha)),
+    externas,
+  );
 }
 
 /** Opiniones aprobadas, con el nombre del cliente abreviado. */

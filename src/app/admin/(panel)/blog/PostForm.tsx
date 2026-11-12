@@ -1,4 +1,5 @@
 import { AdminForm } from "@/components/admin/AdminForm";
+import { ImagenField } from "@/components/admin/ImagenField";
 import { Checkbox, Field, Input, Panel, Textarea } from "@/components/admin/fields";
 import { MarkdownEditor } from "@/components/admin/MarkdownEditor";
 import { guardarPost } from "@/lib/admin/actions";
@@ -11,6 +12,8 @@ type PostEditable = {
   categoria: string;
   fecha: string;
   lecturaMin: number;
+  imagen: string | null;
+  imagenAlt: string;
   cuerpo: string;
   publicado: boolean;
 };
@@ -42,6 +45,17 @@ export function PostForm({ post }: { post?: PostEditable }) {
           </Field>
         </div>
         <Checkbox name="publicado" label="Publicado en el sitio" defaultChecked={post?.publicado ?? true} />
+      </Panel>
+      <Panel>
+        <ImagenField
+          name="imagen"
+          altName="imagenAlt"
+          quitarName="quitarImagen"
+          actual={post?.imagen}
+          alt={post?.imagenAlt}
+          label="Portada (opcional)"
+          aspect="aspect-[16/10]"
+        />
       </Panel>
       <Panel>
         <MarkdownEditor name="cuerpo" defaultValue={post?.cuerpo} />

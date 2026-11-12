@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -6,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { CtaFinal, Label } from "@/components/ui";
 import { BlogPostingJsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
-import { formatFecha } from "@/lib/blog";
+import { formatFecha, portadaDe } from "@/lib/blog";
 import { getPost, getPosts } from "@/lib/data";
 
 export async function generateStaticParams() {
@@ -37,6 +38,7 @@ async function Post({ params }: Pick<PageProps<"/blog/[slug]">, "params">) {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
+  const { imagen, imagenAlt } = portadaDe(post);
 
   return (
     <>
@@ -57,6 +59,11 @@ async function Post({ params }: Pick<PageProps<"/blog/[slug]">, "params">) {
             <span aria-hidden>·</span>
             <span>{post.lecturaMin} min de lectura</span>
           </div>
+          {imagen && (
+            <div className="relative mt-4 aspect-[16/10] overflow-hidden rounded-card border border-borde bg-nube">
+              <Image src={imagen} alt={imagenAlt} fill priority sizes="(min-width: 768px) 680px, 100vw" className="object-cover" />
+            </div>
+          )}
           <div className="mt-6 border-t border-borde pt-10">
             <Markdown>{post.cuerpo}</Markdown>
           </div>

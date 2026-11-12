@@ -1,12 +1,12 @@
 // Copia el contenido estático (src/lib/content.ts, src/lib/blog.ts y src/content/blog/*.md)
-// a la base de datos. Es idempotente: no toca lo que ya existe.
+// a la base de datos. Es idempotente: no toca lo que ya existe (salvo poner la portada a los artículos que no la tienen).
 // Uso: npm run db:seed
 //      npm run db:seed -- --portal   (además crea un cliente y una obra de prueba para el portal)
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { loadEnvConfig } from "@next/env";
 import { neon } from "@neondatabase/serverless";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { posts } from "../src/lib/blog";
 import { precios, proyectos } from "../src/lib/content";
@@ -20,7 +20,15 @@ const db = drizzle(neon(url), { schema });
 async function main() {
   for (const p of posts) {
     const cuerpo = await readFile(join(process.cwd(), "src/content/blog", `${p.slug}.md`), "utf8");
-    await db.insert(schema.posts).values({ ...p, cuerpo }).onConflictDoNothing({ target: schema.posts.slug });
+    // Si el artículo ya existe, solo se le pone la portada cuando aún no tiene una.
+    await db
+      .insert(schema.posts)
+      .values({ ...p, cuerpo })
+      .onConflictDoUpdate({
+        target: schema.posts.slug,
+        set: { imagen: p.imagen, imagenAlt: p.imagenAlt },
+        setWhere: isNull(schema.posts.imagen),
+      });
   }
   for (const [orden, p] of proyectos.entries()) {
     await db

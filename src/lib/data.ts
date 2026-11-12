@@ -30,6 +30,8 @@ const postColumns = {
   categoria: schema.posts.categoria,
   fecha: schema.posts.fecha,
   lecturaMin: schema.posts.lecturaMin,
+  imagen: schema.posts.imagen,
+  imagenAlt: schema.posts.imagenAlt,
 };
 
 /** Artículos publicados, del más reciente al más antiguo (sin el cuerpo). */
