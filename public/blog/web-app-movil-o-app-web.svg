@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="t">
+  <title id="t">Una página web, una aplicación web y una app móvil lado a lado</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eaf7fd"/>
+      <stop offset="1" stop-color="#f5f7fa"/>
+    </linearGradient>
+    <pattern id="rejilla" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M50 0 H0 V50" fill="none" stroke="#1e8fd0" stroke-opacity="0.08" stroke-width="2"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#rejilla)"/>
+  <circle cx="800" cy="520" r="380" fill="#3ec1f3" fill-opacity="0.12"/>
+
+  <!-- Página web (navegador) -->
+  <g transform="translate(120 250)">
+    <rect x="14" y="18" width="460" height="400" rx="22" fill="#0b0d12" fill-opacity="0.12"/>
+    <rect width="460" height="400" rx="22" fill="#ffffff" stroke="#0b0d12" stroke-width="6"/>
+    <path d="M0 22 a22 22 0 0 1 22 -22 h416 a22 22 0 0 1 22 22 v38 h-460 z" fill="#0b0d12"/>
+    <circle cx="32" cy="30" r="8" fill="#3ec1f3"/><circle cx="58" cy="30" r="8" fill="#8a93a3"/><circle cx="84" cy="30" r="8" fill="#8a93a3"/>
+    <rect x="120" y="18" width="300" height="24" rx="12" fill="#1a2230"/>
+    <rect x="36" y="94" width="388" height="130" rx="14" fill="#3ec1f3"/>
+    <rect x="60" y="130" width="200" height="22" rx="11" fill="#0b0d12"/>
+    <rect x="60" y="166" width="140" height="16" rx="8" fill="#0b0d12" fill-opacity="0.5"/>
+    <rect x="36" y="250" width="118" height="110" rx="12" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="171" y="250" width="118" height="110" rx="12" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="306" y="250" width="118" height="110" rx="12" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+  </g>
+
+  <!-- Aplicación web (panel) -->
+  <g transform="translate(560 170)">
+    <rect x="16" y="20" width="480" height="560" rx="24" fill="#0b0d12" fill-opacity="0.18"/>
+    <rect width="480" height="560" rx="24" fill="#0b0d12"/>
+    <rect x="20" y="20" width="110" height="520" rx="14" fill="#1a2230"/>
+    <g fill="#3ec1f3"><rect x="42" y="50" width="66" height="14" rx="7"/></g>
+    <g fill="#4a5262"><rect x="42" y="94" width="66" height="14" rx="7"/><rect x="42" y="134" width="66" height="14" rx="7"/><rect x="42" y="174" width="66" height="14" rx="7"/></g>
+    <rect x="150" y="20" width="150" height="100" rx="14" fill="#1a2230"/>
+    <rect x="310" y="20" width="150" height="100" rx="14" fill="#1a2230"/>
+    <text x="172" y="88" font-family="ui-monospace, Menlo, monospace" font-size="40" font-weight="700" fill="#3ec1f3">+24%</text>
+    <text x="332" y="88" font-family="ui-monospace, Menlo, monospace" font-size="40" font-weight="700" fill="#ffffff">1.2k</text>
+    <rect x="150" y="140" width="310" height="230" rx="14" fill="#1a2230"/>
+    <g fill="#3ec1f3">
+      <rect x="180" y="290" width="32" height="56" rx="6"/><rect x="228" y="250" width="32" height="96" rx="6"/>
+      <rect x="276" y="270" width="32" height="76" rx="6"/><rect x="324" y="210" width="32" height="136" rx="6"/>
+      <rect x="372" y="180" width="32" height="166" rx="6" fill="#1e8fd0"/>
+    </g>
+    <rect x="150" y="390" width="310" height="150" rx="14" fill="#1a2230"/>
+    <g fill="#4a5262"><rect x="174" y="418" width="200" height="14" rx="7"/><rect x="174" y="458" width="250" height="14" rx="7"/><rect x="174" y="498" width="170" height="14" rx="7"/></g>
+  </g>
+
+  <!-- App móvil -->
+  <g transform="translate(1150 230)">
+    <rect x="14" y="18" width="300" height="560" rx="46" fill="#0b0d12" fill-opacity="0.15"/>
+    <rect width="300" height="560" rx="46" fill="#0b0d12"/>
+    <rect x="16" y="16" width="268" height="528" rx="34" fill="#ffffff"/>
+    <rect x="110" y="30" width="80" height="18" rx="9" fill="#0b0d12"/>
+    <circle cx="150" cy="150" r="58" fill="#3ec1f3"/>
+    <path d="M128 150 l16 16 l32 -36" stroke="#0b0d12" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="60" y="236" width="180" height="20" rx="10" fill="#0b0d12"/>
+    <rect x="80" y="270" width="140" height="14" rx="7" fill="#8a93a3"/>
+    <rect x="44" y="320" width="212" height="64" rx="16" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="44" y="398" width="212" height="64" rx="16" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="44" y="476" width="212" height="44" rx="22" fill="#1e8fd0"/>
+  </g>
+
+  <!-- Etiquetas -->
+  <g font-family="ui-monospace, Menlo, monospace" font-size="30" font-weight="700" fill="#0b0d12" text-anchor="middle" letter-spacing="3">
+    <text x="350" y="720">WEB</text>
+    <text x="800" y="800">APP WEB</text>
+    <text x="1300" y="860">APP MÓVIL</text>
+  </g>
+</svg>

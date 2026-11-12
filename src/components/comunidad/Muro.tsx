@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowUpRight, FileText, MessageCircle, Play, Star } from "lucide-react";
+import { ArrowUpRight, FileText, MessageCircle, Newspaper, Play, Star } from "lucide-react";
 import { SocialIcon } from "../SocialIcon";
 import { nombresRed, type ItemMuro, type OpinionPublica } from "@/lib/comunidad";
 
@@ -19,7 +19,9 @@ const fecha = (iso: string) =>
   new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" });
 
 function Icono({ tipo, size = 18 }: { tipo: ItemMuro["tipo"]; size?: number }) {
-  return tipo === "blog" ? <FileText size={size} strokeWidth={1.75} aria-hidden /> : <SocialIcon red={tipo} size={size} />;
+  if (tipo === "blog") return <FileText size={size} strokeWidth={1.75} aria-hidden />;
+  if (tipo === "noticia") return <Newspaper size={size} strokeWidth={1.75} aria-hidden />;
+  return <SocialIcon red={tipo} size={size} />;
 }
 
 /** Muro de publicaciones con filtros por red. Los reproductores de cada red se cargan solo al pulsar. */
@@ -79,7 +81,7 @@ function Tarjeta({ item, orden, comentarios }: { item: ItemMuro; orden: number; 
     </Link>
   ) : (
     <a href={item.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-medium text-cielo-profundo hover:underline">
-      Abrir en {nombresRed[item.tipo]} <ArrowUpRight size={16} aria-hidden />
+      {item.tipo === "noticia" ? `Leer en ${item.fuente}` : `Abrir en ${nombresRed[item.tipo]}`} <ArrowUpRight size={16} aria-hidden />
     </a>
   );
 
@@ -106,7 +108,7 @@ function Tarjeta({ item, orden, comentarios }: { item: ItemMuro; orden: number; 
           aria-label={item.embed ? `Ver aquí: ${item.titulo || item.texto.slice(0, 60)}` : undefined}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.imagen} alt={item.imagenAlt} loading="lazy" className="w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={item.imagen} alt={item.imagenAlt} loading="lazy" referrerPolicy="no-referrer" className="w-full object-cover transition-transform duration-500 group-hover:scale-105" />
           {item.embed && (
             <span className="absolute inset-0 flex items-center justify-center bg-noche/0 transition-colors group-hover:bg-noche/25">
               <span className="play-pulso flex size-14 items-center justify-center rounded-full bg-cielo text-noche">
@@ -124,7 +126,7 @@ function Tarjeta({ item, orden, comentarios }: { item: ItemMuro; orden: number; 
       <div className="flex flex-col gap-3 p-6">
         <div className="flex items-center justify-between gap-3 text-sm text-pizarra">
           <span className="inline-flex items-center gap-2 font-medium text-noche">
-            <Icono tipo={item.tipo} size={15} /> {nombresRed[item.tipo]}
+            <Icono tipo={item.tipo} size={15} /> {item.tipo === "noticia" ? item.fuente : nombresRed[item.tipo]}
           </span>
           <span className="font-mono text-xs">{fecha(item.fecha)}</span>
         </div>

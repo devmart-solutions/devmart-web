@@ -40,6 +40,7 @@ export async function subirImagen(file: File, carpeta: string): Promise<{ url: s
 
 /** Borra una imagen anterior de Blob; si falla, no impide guardar. */
 export async function borrarImagen(url: string | null | undefined) {
-  if (!url || !process.env.BLOB_READ_WRITE_TOKEN) return;
+  // Las rutas de /public (ilustraciones incluidas en el sitio) no viven en Blob.
+  if (!url?.startsWith("https://") || !process.env.BLOB_READ_WRITE_TOKEN) return;
   await del(url).catch((err) => console.error("No se pudo borrar la imagen anterior", err));
 }

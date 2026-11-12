@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="t">
+  <title id="t">Libreta con preguntas y un bombillo encendido</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0d12"/>
+      <stop offset="1" stop-color="#1a2230"/>
+    </linearGradient>
+    <radialGradient id="luz" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#3ec1f3" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3ec1f3" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="puntos" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="2" fill="#ffffff" fill-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#puntos)"/>
+  <circle cx="1130" cy="330" r="330" fill="url(#luz)"/>
+
+  <!-- Libreta -->
+  <g transform="translate(330 190) rotate(-6)">
+    <rect x="18" y="22" width="560" height="660" rx="28" fill="#000" fill-opacity="0.35"/>
+    <rect width="560" height="660" rx="28" fill="#f5f7fa"/>
+    <rect width="70" height="660" rx="28" fill="#1e8fd0"/>
+    <rect x="42" width="28" height="660" fill="#1e8fd0"/>
+    <g fill="#0b0d12">
+      <circle cx="35" cy="90" r="9"/><circle cx="35" cy="200" r="9"/><circle cx="35" cy="310" r="9"/>
+      <circle cx="35" cy="420" r="9"/><circle cx="35" cy="530" r="9"/>
+    </g>
+    <g stroke="#dde2e9" stroke-width="4">
+      <line x1="110" y1="150" x2="520" y2="150"/><line x1="110" y1="250" x2="520" y2="250"/>
+      <line x1="110" y1="350" x2="520" y2="350"/><line x1="110" y1="450" x2="520" y2="450"/>
+      <line x1="110" y1="550" x2="520" y2="550"/>
+    </g>
+    <!-- Preguntas numeradas -->
+    <g font-family="ui-monospace, Menlo, monospace" font-size="34" font-weight="700" fill="#1e8fd0">
+      <text x="112" y="138">01</text><text x="112" y="238">02</text><text x="112" y="338">03</text>
+      <text x="112" y="438">04</text><text x="112" y="538">05</text>
+    </g>
+    <g fill="#4a5262" fill-opacity="0.55">
+      <rect x="180" y="112" width="250" height="18" rx="9"/><rect x="180" y="212" width="300" height="18" rx="9"/>
+      <rect x="180" y="312" width="210" height="18" rx="9"/><rect x="180" y="412" width="280" height="18" rx="9"/>
+      <rect x="180" y="512" width="190" height="18" rx="9"/>
+    </g>
+    <g stroke="#3ec1f3" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M455 122 l16 16 l32 -36"/><path d="M500 222 l16 16 l32 -36"/><path d="M410 322 l16 16 l32 -36"/>
+    </g>
+  </g>
+
+  <!-- Lápiz -->
+  <g transform="translate(860 660) rotate(-38)">
+    <rect width="330" height="44" rx="8" fill="#3ec1f3"/>
+    <rect x="270" width="60" height="44" fill="#dde2e9"/>
+    <rect x="300" width="30" height="44" rx="8" fill="#8a93a3"/>
+    <path d="M0 0 L-60 22 L0 44 Z" fill="#f5f7fa"/>
+    <path d="M-40 15 L-60 22 L-40 29 Z" fill="#0b0d12"/>
+  </g>
+
+  <!-- Bombillo -->
+  <g transform="translate(1130 330)">
+    <g stroke="#3ec1f3" stroke-width="12" stroke-linecap="round">
+      <line x1="0" y1="-230" x2="0" y2="-190"/><line x1="160" y1="-160" x2="132" y2="-132"/>
+      <line x1="-160" y1="-160" x2="-132" y2="-132"/><line x1="225" y1="0" x2="185" y2="0"/>
+      <line x1="-225" y1="0" x2="-185" y2="0"/>
+    </g>
+    <path d="M0 -150 a130 130 0 0 1 80 232 c-18 16 -26 34 -26 58 h-108 c0 -24 -8 -42 -26 -58 a130 130 0 0 1 80 -232 z" fill="#3ec1f3"/>
+    <path d="M-60 -80 a80 80 0 0 1 60 -40" stroke="#eaf7fd" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <rect x="-56" y="152" width="112" height="26" rx="10" fill="#dde2e9"/>
+    <rect x="-50" y="186" width="100" height="26" rx="10" fill="#8a93a3"/>
+    <rect x="-30" y="218" width="60" height="20" rx="10" fill="#4a5262"/>
+  </g>
+
+  <!-- Signos de pregunta flotando -->
+  <g font-family="Georgia, serif" font-weight="700" fill="#ffffff">
+    <text x="1290" y="760" font-size="150" fill-opacity="0.9">?</text>
+    <text x="1430" y="590" font-size="90" fill-opacity="0.45">?</text>
+    <text x="180" y="250" font-size="110" fill="#3ec1f3" fill-opacity="0.6">?</text>
+  </g>
+</svg>

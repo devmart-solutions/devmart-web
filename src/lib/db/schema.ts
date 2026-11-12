@@ -35,6 +35,9 @@ export const posts = pgTable("posts", {
   /** Fecha ISO (AAAA-MM-DD). */
   fecha: text("fecha").notNull(),
   lecturaMin: integer("lectura_min").notNull(),
+  /** Portada: URL de Blob o ruta de /public. Null = la ilustración por slug, si existe. */
+  imagen: text("imagen"),
+  imagenAlt: text("imagen_alt").notNull().default(""),
   cuerpo: text("cuerpo").notNull(),
   publicado: boolean("publicado").notNull().default(true),
   actualizado: timestamp("actualizado", { withTimezone: true }).notNull().defaultNow(),

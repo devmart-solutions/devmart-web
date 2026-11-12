@@ -9,6 +9,9 @@ export type Post = {
   /** Fecha ISO (AAAA-MM-DD). */
   fecha: string;
   lecturaMin: number;
+  /** Portada del artículo (ruta de /public o URL de Blob). */
+  imagen: string | null;
+  imagenAlt: string;
 };
 
 export const posts: Post[] = [
@@ -20,6 +23,8 @@ export const posts: Post[] = [
     categoria: "Guías",
     fecha: "2026-10-16",
     lecturaMin: 4,
+    imagen: "/blog/como-preparar-tu-idea.svg",
+    imagenAlt: "Ilustración de una libreta con cinco preguntas y un bombillo encendido",
   },
   {
     slug: "web-app-movil-o-app-web",
@@ -29,6 +34,8 @@ export const posts: Post[] = [
     categoria: "Guías",
     fecha: "2026-09-30",
     lecturaMin: 5,
+    imagen: "/blog/web-app-movil-o-app-web.svg",
+    imagenAlt: "Ilustración de una página web, una aplicación web y una app móvil lado a lado",
   },
   {
     slug: "por-que-empezamos-con-un-prototipo",
@@ -38,6 +45,8 @@ export const posts: Post[] = [
     categoria: "Proceso",
     fecha: "2026-10-14",
     lecturaMin: 4,
+    imagen: "/blog/por-que-empezamos-con-un-prototipo.svg",
+    imagenAlt: "Ilustración de pantallas de un prototipo conectadas por flechas y un cursor",
   },
   {
     slug: "que-necesitas-para-vender-en-linea",
@@ -47,8 +56,22 @@ export const posts: Post[] = [
     categoria: "Tiendas en línea",
     fecha: "2026-10-07",
     lecturaMin: 5,
+    imagen: "/blog/que-necesitas-para-vender-en-linea.svg",
+    imagenAlt: "Ilustración de un carrito de compras, una tarjeta de pago y una caja de envío",
   },
 ];
+
+const ilustraciones = new Map(posts.map((p) => [p.slug, p]));
+
+/**
+ * Portada de un artículo: la que tenga guardada o, si no tiene, la ilustración incluida
+ * en el sitio para ese slug (así los artículos iniciales la muestran aunque no se haya re-sembrado la base).
+ */
+export function portadaDe(p: { slug: string; imagen: string | null; imagenAlt: string }) {
+  if (p.imagen) return { imagen: p.imagen, imagenAlt: p.imagenAlt };
+  const base = ilustraciones.get(p.slug);
+  return base?.imagen ? { imagen: base.imagen, imagenAlt: base.imagenAlt } : { imagen: null, imagenAlt: "" };
+}
 
 export function formatFecha(iso: string) {
   return new Intl.DateTimeFormat("es-CO", {

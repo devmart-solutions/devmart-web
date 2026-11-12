@@ -3,9 +3,9 @@ import type { RedPublicacion } from "./db/schema";
 // Utilidades del muro Comunidad sin dependencias de servidor (se prueban con tsx --test).
 
 export type ItemMuro = {
-  /** Clave única en el muro: «pub-3», «yt-abc», «blog-slug». */
+  /** Clave única en el muro: «pub-3», «yt-abc», «blog-slug», «nt-…». */
   clave: string;
-  tipo: RedPublicacion | "blog";
+  tipo: RedPublicacion | "blog" | "noticia";
   /** id de la tabla publicaciones (para enlazar opiniones); null en YouTube y blog. */
   publicacionId: number | null;
   titulo: string;
@@ -16,6 +16,8 @@ export type ItemMuro = {
   fecha: string;
   destacada: boolean;
   embed: string | null;
+  /** Medio que publicó la noticia (solo en tipo «noticia»). */
+  fuente?: string;
 };
 
 export type OpinionPublica = {
@@ -36,7 +38,22 @@ export const nombresRed: Record<ItemMuro["tipo"], string> = {
   x: "X",
   youtube: "YouTube",
   blog: "Blog",
+  noticia: "Noticias",
 };
+
+/**
+ * Mezcla las noticias externas con el contenido propio: una noticia cada `cada` publicaciones,
+ * para que las de los medios (siempre más recientes) no tapen lo de DevMart. Las que sobran van al final.
+ */
+export function intercalar<T>(propios: T[], noticias: T[], cada = 3): T[] {
+  const salida: T[] = [];
+  let n = 0;
+  propios.forEach((p, i) => {
+    salida.push(p);
+    if ((i + 1) % cada === 0 && n < noticias.length) salida.push(noticias[n++]!);
+  });
+  return [...salida, ...noticias.slice(n)];
+}
 
 /** Dominios aceptados para cada red: el enlace pegado en el panel debe ser de la red elegida. */
 const dominios: Record<RedPublicacion, RegExp> = {

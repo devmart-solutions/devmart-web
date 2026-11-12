@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="t">
+  <title id="t">Pantallas de un prototipo conectadas por flechas y un cursor que hace clic</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e8fd0"/>
+      <stop offset="1" stop-color="#0b0d12"/>
+    </linearGradient>
+    <pattern id="puntos" width="36" height="36" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="2" fill="#ffffff" fill-opacity="0.12"/>
+    </pattern>
+    <marker id="flecha" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3ec1f3"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#puntos)"/>
+
+  <!-- Conexiones -->
+  <g stroke="#3ec1f3" stroke-width="8" fill="none" stroke-dasharray="18 14" stroke-linecap="round" marker-end="url(#flecha)">
+    <path d="M470 430 C560 430 560 330 640 330"/>
+    <path d="M470 560 C580 560 580 680 640 680"/>
+    <path d="M960 330 C1050 330 1050 480 1130 480"/>
+    <path d="M960 680 C1050 680 1050 560 1130 560"/>
+  </g>
+
+  <!-- Pantalla inicio -->
+  <g transform="translate(170 300)">
+    <rect width="300" height="400" rx="26" fill="#ffffff"/>
+    <rect x="24" y="24" width="252" height="130" rx="14" fill="none" stroke="#8a93a3" stroke-width="5" stroke-dasharray="12 10"/>
+    <path d="M24 24 L276 154 M276 24 L24 154" fill="none" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="24" y="180" width="200" height="18" rx="9" fill="#0b0d12"/>
+    <rect x="24" y="214" width="252" height="12" rx="6" fill="#dde2e9"/>
+    <rect x="24" y="238" width="220" height="12" rx="6" fill="#dde2e9"/>
+    <rect x="24" y="300" width="140" height="56" rx="28" fill="#3ec1f3"/>
+  </g>
+
+  <!-- Pantalla catálogo -->
+  <g transform="translate(640 180)">
+    <rect width="320" height="300" rx="26" fill="#ffffff"/>
+    <g fill="none" stroke="#8a93a3" stroke-width="5" stroke-dasharray="10 8">
+      <rect x="24" y="24" width="124" height="110" rx="12"/><rect x="172" y="24" width="124" height="110" rx="12"/>
+      <rect x="24" y="158" width="124" height="110" rx="12"/><rect x="172" y="158" width="124" height="110" rx="12"/>
+    </g>
+  </g>
+
+  <!-- Pantalla formulario -->
+  <g transform="translate(640 530)">
+    <rect width="320" height="300" rx="26" fill="#ffffff"/>
+    <rect x="24" y="30" width="150" height="16" rx="8" fill="#0b0d12"/>
+    <rect x="24" y="64" width="272" height="44" rx="10" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="24" y="126" width="272" height="44" rx="10" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="24" y="188" width="272" height="44" rx="10" fill="#f5f7fa" stroke="#dde2e9" stroke-width="4"/>
+    <rect x="24" y="248" width="120" height="32" rx="16" fill="#1e8fd0"/>
+  </g>
+
+  <!-- Pantalla final -->
+  <g transform="translate(1130 360)">
+    <rect width="300" height="320" rx="26" fill="#3ec1f3"/>
+    <circle cx="150" cy="130" r="70" fill="#0b0d12"/>
+    <path d="M118 130 l22 22 l44 -48" stroke="#3ec1f3" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="60" y="232" width="180" height="20" rx="10" fill="#0b0d12"/>
+    <rect x="90" y="266" width="120" height="14" rx="7" fill="#0b0d12" fill-opacity="0.5"/>
+  </g>
+
+  <!-- Cursor con onda de clic -->
+  <g transform="translate(300 600)">
+    <circle cx="10" cy="10" r="46" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.5"/>
+    <circle cx="10" cy="10" r="80" fill="none" stroke="#ffffff" stroke-width="4" stroke-opacity="0.25"/>
+    <path d="M0 0 L0 110 L28 84 L48 130 L68 120 L48 76 L86 74 Z" fill="#0b0d12" stroke="#ffffff" stroke-width="7" stroke-linejoin="round"/>
+  </g>
+
+  <text x="800" y="120" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="30" font-weight="700" fill="#ffffff" fill-opacity="0.75" letter-spacing="6">PROTOTIPO NAVEGABLE</text>
+</svg>
