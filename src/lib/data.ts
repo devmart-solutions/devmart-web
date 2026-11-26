@@ -77,12 +77,21 @@ const proyectoColumns = {
   estado: schema.proyectos.estado,
   imagen: schema.proyectos.imagen,
   imagenAlt: schema.proyectos.imagenAlt,
+  galeria: schema.proyectos.galeria,
 };
 
-type ProyectoFila = { url: string | null; urlLabel: string | null; imagen: string | null } & Omit<Proyecto, "url" | "urlLabel" | "imagen">;
+type ProyectoFila = { url: string | null; urlLabel: string | null; imagen: string | null; galeria: string[] } & Omit<Proyecto, "url" | "urlLabel" | "imagen" | "galeria">;
 
 function limpiarProyecto(p: ProyectoFila): Proyecto {
-  return { ...p, url: p.url ?? undefined, urlLabel: p.urlLabel ?? undefined, imagen: p.imagen ?? undefined };
+  const estatico = proyectosEstaticos.find((x) => x.slug === p.slug);
+  const galeria = p.galeria.length > 0 ? p.galeria : (estatico?.galeria ?? (p.imagen ? [p.imagen] : []));
+  return {
+    ...p,
+    url: p.url ?? undefined,
+    urlLabel: p.urlLabel ?? undefined,
+    imagen: p.imagen ?? estatico?.imagen ?? undefined,
+    galeria,
+  };
 }
 
 export async function getProyectos(): Promise<Proyecto[]> {

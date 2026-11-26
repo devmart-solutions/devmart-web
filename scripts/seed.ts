@@ -33,8 +33,26 @@ async function main() {
   for (const [orden, p] of proyectos.entries()) {
     await db
       .insert(schema.proyectos)
-      .values({ ...p, url: p.url ?? null, urlLabel: p.urlLabel ?? null, orden })
-      .onConflictDoNothing({ target: schema.proyectos.slug });
+      .values({ ...p, url: p.url ?? null, urlLabel: p.urlLabel ?? null, galeria: p.galeria ?? [], orden })
+      .onConflictDoUpdate({
+        target: schema.proyectos.slug,
+        set: {
+          cliente: p.cliente,
+          tipo: p.tipo,
+          resumen: p.resumen,
+          stack: p.stack,
+          url: p.url ?? null,
+          urlLabel: p.urlLabel ?? null,
+          reto: p.reto,
+          solucion: p.solucion,
+          resultado: p.resultado,
+          estado: p.estado,
+          imagen: p.imagen ?? null,
+          imagenAlt: p.imagenAlt ?? "",
+          galeria: p.galeria ?? [],
+          orden,
+        },
+      });
   }
   const existentes = await db.select({ id: schema.precios.id }).from(schema.precios).limit(1);
   if (existentes.length === 0) {

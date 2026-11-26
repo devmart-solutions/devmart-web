@@ -95,12 +95,63 @@ export type Proyecto = {
   resultado: string;
   /** «produccion»: sitio real publicado; «prototipo»: prototipo navegable. */
   estado: "produccion" | "prototipo";
-  /** Captura subida desde el panel (Vercel Blob). */
+  /** Captura subida desde el panel (Vercel Blob) o estática. */
   imagen?: string;
   imagenAlt?: string;
+  /** Capturas secundarias para el carrusel o galería del detalle. */
+  galeria?: string[];
 };
 
 export const proyectos: Proyecto[] = [
+  {
+    slug: "kubi",
+    cliente: "Kubi (producto propio de DevMart)",
+    tipo: "App móvil iOS y Android con IA por voz",
+    estado: "prototipo",
+    resumen:
+      "Asistente personal por voz en español de Colombia. Le cuentas lo que hiciste (\"gasté 18 mil en almuerzo con Nequi\") y Kubi lo organiza en finanzas, gimnasio, comidas, estudio y tu día.",
+    stack: [
+      "React Native",
+      "Expo",
+      "TypeScript",
+      "Fastify",
+      "PostgreSQL",
+      "Drizzle",
+      "Better Auth",
+      "Claude (Anthropic)",
+      "Whisper",
+      "ElevenLabs",
+      "Azure Speech",
+      "RevenueCat",
+      "Railway",
+      "Cloudflare",
+      "Resend",
+    ],
+    url: "https://oyekubi.com",
+    urlLabel: "Ver oyekubi.com",
+    reto:
+      "Llevar las finanzas, el gimnasio, las comidas y el estudio exige llenar formularios en varias apps distintas, y la mayoría de la gente lo abandona a los pocos días.",
+    solucion: [
+      "Una sola conversación por voz o texto que entiende montos, fechas, cuentas y nombres colombianos (\"luca\", \"palo\", Nequi, Daviplata) y registra todo en el lugar correcto.",
+      "Respuestas con voces colombianas naturales por región.",
+      "Finanzas con presupuestos, deudas e importación de extractos en PDF, Excel y Google Sheets.",
+      "Gimnasio con mapa de músculos, progreso y récords; comidas con calorías y macros desde una foto.",
+      "Estudio con horario, parciales y pendientes que se repiten, con recordatorios.",
+      "Inicio de sesión con Apple y Google, exportación de datos y borrado de cuenta.",
+    ],
+    resultado:
+      "Publicada en prueba cerrada en Google Play y en revisión en App Store, con landing en oyekubi.com y lista de espera con correo de confirmación.",
+    imagen: "/proyectos/kubi/destacado.png",
+    imagenAlt: "Pantallas de la app Kubi: inicio con el cubo para hablar, finanzas y salud.",
+    galeria: [
+      "/proyectos/kubi/1-inicio.webp",
+      "/proyectos/kubi/2-finanzas.webp",
+      "/proyectos/kubi/3-salud.webp",
+      "/proyectos/kubi/4-estudio.webp",
+      "/proyectos/kubi/5-dia.webp",
+      "/proyectos/kubi/6-ejercicio.webp",
+    ],
+  },
   {
     slug: "eliab-bohorquez-perfumeria",
     cliente: "Eliab Bohorquez Perfumería",
