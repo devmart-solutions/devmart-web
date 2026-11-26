@@ -1,9 +1,89 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
 import type { Proyecto } from "@/lib/content";
+import { Revelar } from "./Revelar";
 import { TarjetaViva } from "./TarjetaViva";
 import { ImagePlaceholder, Label } from "./ui";
+
+export function ProyectoDestacadoCard({ p }: { p: Proyecto }) {
+  return (
+    <Revelar>
+      <div className="overflow-hidden rounded-card border border-borde bg-blanco shadow-sm transition hover:shadow-elevada">
+        <div className="grid gap-8 p-6 md:grid-cols-[1.1fr_0.9fr] md:items-center md:p-10">
+          <TarjetaViva className="overflow-hidden rounded-panel border border-borde bg-nube">
+            <Link href={`/proyectos/${p.slug}`} className="group relative block aspect-[16/10] w-full">
+              {p.imagen ? (
+                <Image
+                  src={p.imagen}
+                  alt={p.imagenAlt ?? p.cliente}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 600px, 100vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <ImagePlaceholder className="aspect-[16/10]" />
+              )}
+              <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+                <EstadoBadge estado={p.estado} />
+                {p.slug === "kubi" && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cielo-profundo px-3 py-1 font-mono text-[11px] tracking-wider text-blanco uppercase">
+                    <Sparkles size={12} aria-hidden /> Producto propio
+                  </span>
+                )}
+              </div>
+            </Link>
+          </TarjetaViva>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <Label>{p.tipo}</Label>
+            </div>
+            <h3 className="font-display text-2xl font-bold tracking-tight text-noche md:text-3xl">
+              {p.cliente}
+            </h3>
+            <p className="text-base leading-relaxed text-texto-cuerpo md:text-lg">{p.resumen}</p>
+
+            {p.stack.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {p.stack.slice(0, 6).map((tech) => (
+                  <span
+                    key={tech}
+                    className="rounded-full border border-borde bg-nube px-3 py-1 font-mono text-[11px] text-pizarra"
+                  >
+                    {tech}
+                  </span>
+                ))}
+                {p.stack.length > 6 && (
+                  <span className="rounded-full border border-borde bg-nube px-2.5 py-1 font-mono text-[11px] text-niebla">
+                    +{p.stack.length - 6} más
+                  </span>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-4 pt-4">
+              <Link href={`/proyectos/${p.slug}`} className="btn-primary">
+                Ver el caso completo <ArrowRight size={18} strokeWidth={1.5} aria-hidden />
+              </Link>
+              {p.url && (
+                <a
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                >
+                  {p.urlLabel ?? "Visitar"} <ArrowUpRight size={18} strokeWidth={1.5} aria-hidden />
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Revelar>
+  );
+}
 
 export function ProjectCard({ p }: { p: Proyecto }) {
   return (

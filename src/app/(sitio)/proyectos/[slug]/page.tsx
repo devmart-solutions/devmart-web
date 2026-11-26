@@ -42,6 +42,7 @@ async function Caso({ params }: Pick<PageProps<"/proyectos/[slug]">, "params">) 
 
   // Galería de imágenes (usa galeria si existe o la imagen principal)
   const imagenes = p.galeria && p.galeria.length > 0 ? p.galeria : p.imagen ? [p.imagen] : [];
+  const formatoGaleria = /m[oó]vil|ios|android/i.test(p.tipo) ? "movil" : "web";
 
   return (
     <>
@@ -76,7 +77,12 @@ async function Caso({ params }: Pick<PageProps<"/proyectos/[slug]">, "params">) 
 
       {/* Galería de capturas interactiva */}
       <div className="container-dm pb-20">
-        <ProyectoGaleria imagenes={imagenes} altPrincipal={p.imagenAlt ?? p.cliente} cliente={p.cliente} />
+        <ProyectoGaleria
+          imagenes={imagenes}
+          altPrincipal={p.imagenAlt ?? p.cliente}
+          cliente={p.cliente}
+          formato={formatoGaleria}
+        />
       </div>
 
       {/* Reto -> Solución -> Resultado */}

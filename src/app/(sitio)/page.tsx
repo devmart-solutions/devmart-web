@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Cube } from "@/components/Cube";
-import { ProjectCard, ProjectSlot } from "@/components/ProjectCard";
+import { ProjectCard, ProjectSlot, ProyectoDestacadoCard } from "@/components/ProjectCard";
 import { Identidad } from "@/components/Identidad";
 import { Revelar } from "@/components/Revelar";
 import { CtaFinal } from "@/components/ui";
@@ -88,16 +88,35 @@ export default async function Home() {
             </Link>
           </Revelar>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {proyectos.slice(0, 3).map((p, i) => (
-              <Revelar key={p.slug} retraso={i * 120}>
-                <ProjectCard p={p} />
-              </Revelar>
-            ))}
-            {Array.from({ length: Math.max(0, 3 - proyectos.length) }, (_, i) => (
-              <ProjectSlot key={i} />
-            ))}
-          </div>
+          {(() => {
+            const enProduccion = proyectos.filter((p) => p.estado === "produccion");
+            if (enProduccion.length === 1) {
+              return <ProyectoDestacadoCard p={enProduccion[0]!} />;
+            }
+            if (enProduccion.length === 2) {
+              return (
+                <div className="grid gap-6 md:grid-cols-2">
+                  {enProduccion.map((p, i) => (
+                    <Revelar key={p.slug} retraso={i * 120}>
+                      <ProjectCard p={p} />
+                    </Revelar>
+                  ))}
+                </div>
+              );
+            }
+            return (
+              <div className="grid gap-6 md:grid-cols-3">
+                {enProduccion.slice(0, 3).map((p, i) => (
+                  <Revelar key={p.slug} retraso={i * 120}>
+                    <ProjectCard p={p} />
+                  </Revelar>
+                ))}
+                {Array.from({ length: Math.max(0, 3 - enProduccion.length) }, (_, i) => (
+                  <ProjectSlot key={i} />
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </section>
 

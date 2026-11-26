@@ -153,6 +153,29 @@ export const proyectos: Proyecto[] = [
     ],
   },
   {
+    slug: "oyekubi-web",
+    cliente: "OyeKubi · Landing web",
+    tipo: "Landing page",
+    estado: "produccion",
+    resumen:
+      "Sitio web oficial de Kubi en oyekubi.com: presentación del asistente por voz, capturas de la app, lista de espera con correo de confirmación y páginas legales para tiendas.",
+    stack: ["HTML5", "CSS3", "JavaScript", "Cloudflare Pages", "Fastify API", "Resend"],
+    url: "https://oyekubi.com",
+    urlLabel: "Visitar oyekubi.com",
+    reto:
+      "Presentar la app Kubi antes de su lanzamiento abierto, captar registros reales en lista de espera y cumplir con los requisitos legales de App Store y Google Play.",
+    solucion: [
+      "Landing ligera publicada en oyekubi.com sobre Cloudflare Pages con carga inmediata en móvil y escritorio.",
+      "Formulario de lista de espera conectado a la API con correo automático de confirmación vía Resend.",
+      "Exhibición de las pantallas clave de la app y beneficios principales de uso por voz.",
+      "Páginas dedicadas de privacidad, términos, soporte, verificación de correo y eliminación de cuenta.",
+    ],
+    resultado:
+      "En producción en oyekubi.com, captando usuarios para la lista de espera y operando como sitio oficial para la revisión en Google Play y App Store.",
+    imagen: "/proyectos/oyekubi-web/portada.png",
+    imagenAlt: "Sitio web oficial de Kubi en oyekubi.com.",
+  },
+  {
     slug: "eliab-bohorquez-perfumeria",
     cliente: "Eliab Bohorquez Perfumería",
     tipo: "Tienda en línea",
